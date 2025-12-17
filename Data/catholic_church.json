@@ -1,0 +1,121 @@
+{
+  "entity_id": "catholic_church",
+  "entity_state": "ACTIVE",
+  "lifetime": {
+    "harm_ly": -830000,
+    "harm_ecy": -370000,
+    "surplus_ly": 1000000,
+    "surplus_ecy": 450000,
+    "outstanding_ly": 170000,
+    "outstanding_ecy": 80000,
+    "status": "STABILIZED"
+  },
+  "current_year": {
+    "year": 2024,
+    "harm_ly": -60000,
+    "harm_ecy": -40000,
+    "surplus_ly": 1000000,
+    "surplus_ecy": 450000,
+    "status": "STABILIZED"
+  },
+  "entries": [
+    {
+      "entry_id": "cath_harm_001",
+      "entity_id": "catholic_church",
+      "date_logged": "1962-10-06",
+      "year": 1962,
+      "harm_ly": -150000,
+      "surplus_ly": 0,
+      "harm_ecy": -50000,
+      "surplus_ecy": 0,
+      "description": "Crimen Sollicitationis — documented instruction to bishops to cover up abuse (HIGH INTENT)",
+      "harm_type": "DELIBERATE",
+      "confidence": "HIGH",
+      "age_adjustment_note": "Victims primarily children, ongoing trauma into adulthood"
+    },
+    {
+      "entry_id": "cath_harm_002",
+      "entity_id": "catholic_church",
+      "date_logged": "2002-01-06",
+      "year": 2002,
+      "harm_ly": -400000,
+      "surplus_ly": 0,
+      "harm_ecy": -160000,
+      "surplus_ecy": 0,
+      "description": "Boston Globe Spotlight — systemic cover-up revealed; institution knew and concealed",
+      "harm_type": "SYSTEMIC",
+      "confidence": "HIGH",
+      "age_adjustment_note": "Multi-generational trauma documented"
+    },
+    {
+      "entry_id": "cath_harm_003",
+      "entity_id": "catholic_church",
+      "date_logged": "2021-10-05",
+      "year": 2021,
+      "harm_ly": -220000,
+      "surplus_ly": 0,
+      "harm_ecy": -120000,
+      "surplus_ecy": 0,
+      "description": "French Independent Commission — 330,000 victims since 1950; institution defended perpetrators",
+      "harm_type": "SYSTEMIC",
+      "confidence": "HIGH",
+      "age_adjustment_note": "Intergenerational trauma pattern"
+    },
+    {
+      "entry_id": "cath_harm_004",
+      "entity_id": "catholic_church",
+      "date_logged": "2024-01-01",
+      "year": 2024,
+      "harm_ly": -60000,
+      "surplus_ly": 0,
+      "harm_ecy": -40000,
+      "surplus_ecy": 0,
+      "description": "Ongoing global cases — continued harm, some institutional resistance to accountability",
+      "harm_type": "RECKLESSNESS",
+      "confidence": "MEDIUM",
+      "age_adjustment_note": ""
+    },
+    {
+      "entry_id": "cath_surplus_001",
+      "entity_id": "catholic_church",
+      "date_logged": "2024-01-01",
+      "year": 2024,
+      "harm_ly": 0,
+      "surplus_ly": 500000,
+      "harm_ecy": 0,
+      "surplus_ecy": 200000,
+      "description": "Global healthcare systems — hospitals and clinics (130+ countries)",
+      "harm_type": "NEGLIGENCE",
+      "confidence": "HIGH",
+      "age_adjustment_note": ""
+    },
+    {
+      "entry_id": "cath_surplus_002",
+      "entity_id": "catholic_church",
+      "date_logged": "2024-01-01",
+      "year": 2024,
+      "harm_ly": 0,
+      "surplus_ly": 300000,
+      "harm_ecy": 0,
+      "surplus_ecy": 150000,
+      "description": "Education systems — schools and universities (234,000+ schools globally)",
+      "harm_type": "NEGLIGENCE",
+      "confidence": "HIGH",
+      "age_adjustment_note": ""
+    },
+    {
+      "entry_id": "cath_surplus_003",
+      "entity_id": "catholic_church",
+      "date_logged": "2024-01-01",
+      "year": 2024,
+      "harm_ly": 0,
+      "surplus_ly": 200000,
+      "harm_ecy": 0,
+      "surplus_ecy": 100000,
+      "description": "Charity and humanitarian aid — Caritas and similar organizations (180+ countries)",
+      "harm_type": "NEGLIGENCE",
+      "confidence": "HIGH",
+      "age_adjustment_note": ""
+    }
+  ]
+}
