@@ -1,0 +1,35 @@
+{
+  "genesis_entry": {
+    "entry_id": "GENESIS_2025-12-21",
+    "date_logged": "2025-12-21",
+    "category": "System",
+    "type": "Genesis",
+    "intent": "Initialization",
+    "description": "First Candle Ledger Genesis Block - The Vow v1.0 signed by first three carriers on December 21, 2025 at 00:01 UTC",
+    "harm_cost_ly": 0,
+    "surplus_ly": 0,
+    "source": "First Candle Project",
+    "validator_status": "Verified",
+    "net_balance": 0,
+    "patch_status": "Immutable",
+    "notes": "Genesis block establishing the ledger. Pillar 0 scope rules are now active.",
+    "timestamp": 1767225660
+  },
+  "signatures": [
+    {
+      "carrier": "carrier_1",
+      "pubkey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApiZ3oH3oxzPPiE4n0zhU5EQ/S7g/Fgi2abc9Q3e6PhU=\n-----END PUBLIC KEY-----",
+      "signature": "8021d15a6c3d132c29763609ebd01399435fad4a6e272f548133c7c1b0ee97948416ead99532690d860c5d0cbfb6a9149dacdbd7ea68fa5d6bf1edb3487e6d06"
+    },
+    {
+      "carrier": "carrier_2",
+      "pubkey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAYqlF6BqX1TCXVBhPHchHX5n+WDPkkowiXgMc1fWoizM=\n-----END PUBLIC KEY-----",
+      "signature": "e59d2cf7ce0085689649e1e52fe68af5584ddef196acc231818e4e25da0b6765a623b7e8526969fc9ddfde67422f29414a0171cffbb5cd364411ee197e721a07"
+    },
+    {
+      "carrier": "carrier_3",
+      "pubkey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAg0IO8B4u3P14nbCiTYRlLyz95r6503DdPO9YR3sgAWU=\n-----END PUBLIC KEY-----",
+      "signature": "1d9895ee683b4a43899cfdbc237337e551d9588822c25b8833805410b98c45a3ade802da60598f7dbb99f9e94c260f24f34f4b6a681210fc215d4c74cc731403"
+    }
+  ]
+}

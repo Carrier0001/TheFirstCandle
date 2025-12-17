@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}The Vow Ledger{% endblock %}
+
+{% block content %}
+<h2 style="color:#fff; text-shadow:0 0 6px #0f0;">The Ledger is Open</h2>
+<p style="color:#ccc;">All measured entities:</p>
+
+<div class="container">
+  {% if entities %}
+    {% for entity in entities %}
+      <div class="balance-card">
+        <h3>
+          <a href="/entity/{{ entity.id }}" style="color:#33ff33; text-decoration:none;">
+            {{ entity.name }}
+          </a>
+        </h3>
+        <p class="neutral">Entries: <strong>{{ entity.entries }}</strong></p>
+        <p class="harm">Outstanding LY: <span>{{ "%.1f" | format(entity.outstanding_ly / 1000000) }} million</span></p>
+        <p class="harm">Outstanding ECY: <span>{{ "%.1f" | format(entity.outstanding_ecy / 1000000) }} million</span></p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="neutral">No entities yet.</p>
+  {% endif %}
+  <p>
+    <a href="/submit" style="color:#33ff33; text-decoration:none;">
+      ⬡ Submit a new entry
+    </a>
+  </p>
+</div>
+{% endblock %}
