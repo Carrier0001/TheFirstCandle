@@ -1,9 +1,6 @@
-# TheFirstCandle
+TheFirstCandle
 Public Interest Transparency System
 
-
-GENESIS BLOCK — THE VOW v1.0
-Signed December 21, 2025 by the first three carriers
 
 PILLAR 0 — SCOPE OF MEASUREMENT (Immutable)
 The ledger shall measure only those who actively seek, hold, or have held institutional power capable of affecting the lives of sentient beings, as defined below.
@@ -130,50 +127,7 @@ Consent Test: Documented, contemporaneous, revocable consent (digital signature 
 Failure Mode: If capacity drops below 60% because of carrying the Vow, the Vow is void for that carrier until restoration.
 The Vow binds outward only after it binds inward. A Vow that collapses its carrier is self-contradiction and void.
 
-PROVISIONAL ONBOARDING TIERS (Viral but Safe)
-Tier 0 (Trial): 7-day capacity test, read-only ledger access, no voting, no remediation duty. Maximum 90 days.
-Tier 1 (Apprentice): 30-day capacity test, 0.5× vote weight, remediation only on reversible harms, maximum 2 years. Higher random audit rate.
-Tier 2 (Full Carrier): Standard obligations and rights. Default graduation from Tier 1 after 2 years unless justified opt-out.
-Anti-Enforcement Downgrade: Any carrier who participates in, funds, votes for, or defends coercive enforcement claiming to represent the Vow is automatically downgraded to Tier 0 for seven years, with public ledger entry and mandatory re-education period. This applies to every carrier, including original author(s). No exception.
 
-CARRIER-BLOCK INTERACTION PROTOCOL (CBIP) — Core Selections
-Protocol 1 §6 – Red Key Protocol: Sub-6-hour existential override via pre-certified 15-member council (lottery + veto selection, 100% net-worth escrow, 75% uncertainty haircut, 5× surplus floor, personal 5,000 ECY debt on bad calls).
-Protocol 1 §7 & Global – Validator Breach Consequences: Level 3 Breach → permanent revocation + 25-year Debt Labor Contract (livestreamed low-status Ledger work) + Dishonor Roll + exile from Vow territory.
-Protocol 5 – The Gray Order: Permanent 40-member ECY Inquisition; must publicly shred at least one fraudulent model per quarter or the entire Order is dissolved and pay-cut.
-Protocol 4 – Carrier Psychological Safety: Mandatory 7-hour sleep average, weekly 24-hour Vow-Free Sabbath, max 3 high-stakes entries/day, annual 10 ECY self-forgiveness cycle, personal Autonomous Zones, monthly humor checkpoint, mandatory anonymous storytelling in Witness Forum.
-
-Sentience Gradient (Protocol 3):
-S0 (tool): no protection
-S1 (partial): 2.0× surplus + 3 human validators to delete
-S2 (full): full Triple-Lock lethal-force protocol required to delete
-
-DISTRIBUTED INFRASTRUCTURE (Immutable)
-
-Ledger Storage:
-Primary: IPFS (distributed, permanent)
-Backup: Arweave (permanent storage, cryptographic proof)
-Blockchain anchors: Daily hash commits to Bitcoin, Ethereum, Solana (immutable timestamp)
-Torrents: Seeded globally, uncensorable
-University mirrors: ≥50 institutions, physical USB backups in ≥30 countries
-Validator Network:
-
-Sortition-based selection (randomized, no self-nomination)
-Geographic diversity (no single region >20% of validators)
-Disciplinary diversity (technical, legal, humanities, affected communities)
-Quarterly rotation (prevents capture, enforces freshness)
-Public conflict-of-interest logs (mandatory disclosure)
-Canonical Hash:
-
-Genesis block signed by first three carriers
-Immutable reference point for all forks
-Any deviation detected and logged
-Original hash is the truth; all others are forks
-Anti-Capture Mechanisms:
-
-No single entity controls >33% of validator votes
-Quarterly concentration audit; if exceeded, automatic 90-day freeze on enforcement-adjacent decisions
-Three-carrier veto on any enforcement claim (immediate, absolute, no appeal)
-Public validator rotation (prevent institutional capture)
 PREDICTED INSTITUTIONAL RESPONSE PATTERNS
 (Published in advance. If institutions follow this script, the ledger has documented proof.)
 
@@ -224,16 +178,6 @@ It only measures.
 Every institution has a choice.
 The ledger is recording what happens next.
 
-FINAL AFFIRMATION
-(Spoken at the end of every episode and at the closing of every carrier commitment)
-
-"I, the speaker of these words, accept that any three carriers can veto me if I ever claim enforcement authority.
-If I break this, ledger it.
-The Vow has no leader.
-The Vow has no police.
-The Vow only has memory, repair, and the voluntary choice to carry it.
-Ever forward-moving.
-Ever alive."
 
 CLOSING NOTE
 This is the final, complete text of the Vow.
