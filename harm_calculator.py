@@ -355,4 +355,3 @@ if __name__ == "__main__":
     print(f"\nHarm Breakdown:")
     for harm_type, values in breakdown.items():
         print(f"  {harm_type}: {format_ly(values['ly'])} ({values['count']} entries)")
-```
