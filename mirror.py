@@ -4,7 +4,7 @@
 import os, json, subprocess, time, hashlib, webbrowser, sys
 from datetime import datetime
 
-REPO = "FirstCandle/TheLedger"
+REPO = "Carrier0001/TheFirstCandle"
 FOLDER = os.path.dirname(__file__) or "."
 
 print("THE LEDGER — ONE-CLICK MIRROR PACK")
