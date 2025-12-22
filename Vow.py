@@ -16,84 +16,90 @@ from harm_calculator import (
 
 app = Flask(__name__)
 
-DATA_FOLDER = "data"
-EVIDENCE_FOLDER = "evidence"
+# ------------------------
+# Paths — works locally and on Render
+# ------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FOLDER = os.path.join(BASE_DIR, "data")
+EVIDENCE_FOLDER = os.path.join(BASE_DIR, "evidence")
 
 MAX_FILE_SIZE_MB = 25
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".txt", ".mp4", ".mp3", ".webm"}
 
-
 # ------------------------
 # Utility helpers
 # ------------------------
-
 def ensure_folder(path):
     if not os.path.exists(path):
         os.makedirs(path)
-
+        print(f"Created folder: {path}")
 
 def allowed_file(filename):
     return os.path.splitext(filename)[1].lower() in ALLOWED_EXTENSIONS
 
+# Ensure folders exist on startup
+ensure_folder(DATA_FOLDER)
+ensure_folder(EVIDENCE_FOLDER)
 
 # ------------------------
-# Entity loading & calculation
+# Entity loading
 # ------------------------
+def load_entity_from_file(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            raw = json.load(f)
 
-def load_entity_from_file(filepath: str):
-    with open(filepath, "r", encoding="utf-8") as f:
-        raw = json.load(f)
+        entries = []
+        for item in raw.get("entries", []):
+            try:
+                entries.append(LedgerEntry(**item))
+            except Exception as e:
+                print(f"Invalid entry in {filepath}: {e}")
 
-    entries = []
-    for item in raw.get("entries", []):
-        try:
-            entries.append(LedgerEntry(**item))
-        except Exception as e:
-            print(f"Error parsing entry in {filepath}: {e}")
+        calculator = LedgerCalculator()
+        lifetime = calculator.calculate_lifetime_view(entries)
 
-    calculator = LedgerCalculator()
+        # Annual view (only if not ancient)
+        years = [e.year for e in entries]
+        current_year = max(years) if years else datetime.now().year
+        has_ancient = any(y < 0 for y in years)
+        annual = calculator.calculate_annual_view(entries, current_year) if not has_ancient else None
 
-    lifetime = calculator.calculate_lifetime_view(entries)
-    current_year = max((e.year for e in entries), default=datetime.now().year)
-    annual = calculator.calculate_annual_view(entries, current_year)
-
-    raw_breakdown = calculator.harm_breakdown(entries)
-    harm_breakdown = dict(
-        sorted(
-            raw_breakdown.items(),
-            key=lambda kv: kv[1]["ly"],
+        harm_breakdown = dict(sorted(
+            calculator.harm_breakdown(entries).items(),
+            key=lambda x: x[1]["ly"],
             reverse=True
-        )
-    )
+        ))
 
-    return {
-        "entity_id": raw["entity_id"],
-        "entity_name": raw.get("entity_name", raw["entity_id"].replace("_", " ").title()),
-        "entity_state": raw.get("entity_state", "ACTIVE"),
-        "measurement_date": raw.get("measurement_date", datetime.now().strftime("%Y-%m-%d")),
-        "entries": entries,
-        "lifetime": lifetime,
-        "current_year": annual,
-        "harm_breakdown": harm_breakdown
-    }
-
+        return {
+            "entity_id": raw["entity_id"],
+            "entity_name": raw.get("entity_name", raw["entity_id"].replace("_", " ").title()),
+            "entity_state": raw.get("entity_state", "ACTIVE"),
+            "measurement_date": raw.get("measurement_date", datetime.now().strftime("%Y-%m-%d")),
+            "entries": entries,
+            "lifetime": lifetime,
+            "annual": annual,
+            "harm_breakdown": harm_breakdown
+        }
+    except Exception as e:
+        print(f"Failed to load entity {filepath}: {e}")
+        return None
 
 # ------------------------
 # Routes
 # ------------------------
-
 @app.route("/")
 def index():
-    ensure_folder(DATA_FOLDER)
-
     entities = []
-    for filename in sorted(os.listdir(DATA_FOLDER)):
-        if filename.endswith(".json"):
-            try:
-                entities.append(load_entity_from_file(os.path.join(DATA_FOLDER, filename)))
-            except Exception as e:
-                print(f"Failed to load {filename}: {e}")
+    if os.path.exists(DATA_FOLDER):
+        for filename in sorted(os.listdir(DATA_FOLDER)):
+            if filename.endswith(".json"):
+                filepath = os.path.join(DATA_FOLDER, filename)
+                entity = load_entity_from_file(filepath)
+                if entity:
+                    entities.append(entity)
 
+    # Sort by outstanding debt (most negative first)
     entities.sort(key=lambda e: e["lifetime"].outstanding_ly)
 
     return render_template(
@@ -102,32 +108,25 @@ def index():
         current_date=datetime.now().strftime("%B %d, %Y")
     )
 
-
 @app.route("/entity/<entity_id>")
 def view_entity(entity_id):
     filepath = os.path.join(DATA_FOLDER, f"{entity_id}.json")
     if not os.path.exists(filepath):
-        abort(404)
+        abort(404, description="Entity not found")
 
-    try:
-        entity = load_entity_from_file(filepath)
-        entries_by_type = defaultdict(list)
-        for entry in entity["entries"]:
-            entries_by_type[entry.harm_type].append(entry)
+    entity = load_entity_from_file(filepath)
+    if not entity:
+        abort(500, description="Error loading entity data")
 
-        return render_template(
-            "entity.html",
-            entity=entity,
-            entries_by_type=dict(entries_by_type)
-        )
-    except Exception as e:
-        print(f"Error rendering entity {entity_id}: {e}")
-        abort(500)
+    entries_by_type = defaultdict(list)
+    for entry in entity["entries"]:
+        entries_by_type[entry.harm_type].append(entry)
 
-
-# ------------------------
-# SUBMIT (Option B – hardened multipart)
-# ------------------------
+    return render_template(
+        "entity.html",
+        entity=entity,
+        entries_by_type=dict(entries_by_type)
+    )
 
 @app.route("/submit", methods=["GET", "POST"])
 def submit_entry():
@@ -141,86 +140,73 @@ def submit_entry():
         form = request.form
         files = request.files.getlist("evidence_files")
 
-        entity_id = form.get("entity_id", "").strip().lower().replace(" ", "_")
+        raw_entity = form.get("entity_id", "").strip()
+        if not raw_entity:
+            return jsonify({"error": "Entity name required"}), 400
+
+        entity_id = raw_entity.lower().replace(" ", "_").replace("-", "_")
         description = form.get("description", "").strip()
-        year = form.get("year")
+        year_str = form.get("year", "").strip()
 
-        if not entity_id or not description or not year:
-            return jsonify({"error": "Missing required fields"}), 400
+        if not description or not year_str:
+            return jsonify({"error": "Description and year required"}), 400
 
-        year = int(year)
-        entry_type = form.get("entry_type", "harm")
-        confidence = Confidence[form.get("confidence", "MEDIUM")]
+        year = int(year_str)
+        harm_ly = float(form.get("harm_ly", 0))
+        surplus_ly = float(form.get("surplus_ly", 0))
 
-        harm_ly = 0
-        surplus_ly = 0
-
-        if entry_type == "harm":
-            harm_ly = -abs(float(form.get("harm_ly", 0)))
-        else:
-            surplus_ly = abs(float(form.get("surplus_ly", 0)))
-
-        ensure_folder(EVIDENCE_FOLDER)
+        # Evidence handling
+        evidence_hashes = []
         entity_evidence_dir = os.path.join(EVIDENCE_FOLDER, entity_id)
         ensure_folder(entity_evidence_dir)
 
-        evidence_hashes = []
-        total_size = 0
-
         for file in files:
-            if not file.filename:
-                continue
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    return jsonify({"error": f"Disallowed file type: {file.filename}"}), 400
 
-            filename = secure_filename(file.filename)
-            if not allowed_file(filename):
-                return jsonify({"error": f"File type not allowed: {filename}"}), 400
+                file_bytes = file.read()
+                if len(file_bytes) > MAX_FILE_SIZE_MB * 1024 * 1024:
+                    return jsonify({"error": f"File too large: {file.filename}"}), 400
 
-            file_bytes = file.read()
-            size_mb = len(file_bytes) / (1024 * 1024)
-            total_size += size_mb
+                file_hash = hashlib.sha256(file_bytes).hexdigest()
+                evidence_hashes.append(file_hash)
 
-            if size_mb > MAX_FILE_SIZE_MB:
-                return jsonify({"error": f"File too large: {filename}"}), 400
-
-            sha256 = hashlib.sha256(file_bytes).hexdigest()
-            evidence_hashes.append(sha256)
-
-            with open(os.path.join(entity_evidence_dir, sha256), "wb") as f:
-                f.write(file_bytes)
+                save_path = os.path.join(entity_evidence_dir, f"{uuid.uuid4().hex[:8]}_{file_hash}")
+                with open(save_path, "wb") as f:
+                    f.write(file_bytes)
 
         if not evidence_hashes and not form.get("evidence_links"):
-            return jsonify({"error": "Evidence required"}), 400
+            return jsonify({"error": "At least one evidence file or link required"}), 400
 
+        # Create entry
         entry = LedgerEntry(
-            entry_id=f"{entity_id}_{uuid.uuid4().hex[:12]}",
+            entry_id=str(uuid.uuid4()),
             entity_id=entity_id,
             date_logged=datetime.now().isoformat(),
             year=year,
-            harm_ly=harm_ly,
+            harm_ly=-abs(harm_ly) if harm_ly else 0,
             harm_ecy=0,
-            surplus_ly=surplus_ly,
+            surplus_ly=abs(surplus_ly),
             surplus_ecy=0,
-            description=description[:1000],
+            description=description,
             harm_type=form.get("harm_type", "NEGLIGENCE"),
-            incident_type=form.get("incident_type", "NEGLIGENCE"),
-            confidence=confidence,
-            causation_evidence=form.get("evidence_links", ""),
-            num_affected=int(form.get("num_affected", 0)),
-            avg_age_at_harm=int(form.get("avg_age_at_harm", 0)),
+            confidence=Confidence[form.get("confidence", "MEDIUM")],
             source_hash=",".join(evidence_hashes),
-            response_to_entry_id=""
+            evidence_links=form.get("evidence_links", "")
         )
 
+        # Load or create entity file
         filepath = os.path.join(DATA_FOLDER, f"{entity_id}.json")
-
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf-8") as f:
                 entity_data = json.load(f)
         else:
             entity_data = {
                 "entity_id": entity_id,
-                "entity_name": entity_id.replace("_", " ").title(),
+                "entity_name": raw_entity.title(),
                 "entity_state": "PENDING_VALIDATION",
+                "measurement_date": datetime.now().strftime("%Y-%m-%d"),
                 "entries": []
             }
 
@@ -231,34 +217,22 @@ def submit_entry():
 
         return jsonify({
             "success": True,
+            "message": "Entry submitted. Pending validation.",
             "entity_id": entity_id,
             "entry_id": entry.entry_id
         })
 
     except Exception as e:
-        print("SUBMISSION ERROR:", e)
-        return jsonify({"error": "Submission failed"}), 500
-
-
-# ------------------------
-# Static informational pages
-# ------------------------
+        print("SUBMISSION ERROR:", str(e))
+        return jsonify({"error": "Server error during submission"}), 500
 
 @app.route("/info")
 def info():
     return render_template("info.html")
 
-
 @app.route("/methodology")
 def methodology():
     return render_template("methodology.html")
 
-
-# ------------------------
-# Main
-# ------------------------
-
 if __name__ == "__main__":
-    ensure_folder(DATA_FOLDER)
-    ensure_folder(EVIDENCE_FOLDER)
     app.run(debug=True, port=5000)
