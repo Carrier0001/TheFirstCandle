@@ -1,32 +1,86 @@
 {% extends "base.html" %}
-
-{% block title %}The Vow Ledger{% endblock %}
+{% block title %}The First Candle — Public Ledger{% endblock %}
 
 {% block content %}
-<h2 style="color:#fff; text-shadow:0 0 6px #0f0;">The Ledger is Open</h2>
-<p style="color:#ccc;">All measured entities:</p>
+<h2 style="color:#fff; text-shadow:0 0 8px #0f0; font-size:2.5rem; margin-bottom:0.5rem;">
+    The Ledger is Open
+</h2>
+<p style="color:#aaa; margin-bottom:2rem;">
+    Irreversible harm measured in Life-Years (LY) and Equivalent Carbon Years (ECY)<br>
+    As of {{ current_date }}
+</p>
 
 <div class="container">
+
   {% if entities %}
     {% for entity in entities %}
       <div class="balance-card">
         <h3>
-          <a href="/entity/{{ entity.id }}" style="color:#33ff33; text-decoration:none;">
-            {{ entity.name }}
+          <a href="/entity/{{ entity.entity_id }}" style="color:#33ff33; text-decoration:none; text-shadow:0 0 4px #0f0;">
+            {{ entity.entity_name }}
           </a>
         </h3>
-        <p class="neutral">Entries: <strong>{{ entity.entries }}</strong></p>
-        <p class="harm">Outstanding LY: <span>{{ "%.1f" | format(entity.outstanding_ly / 1000000) }} million</span></p>
-        <p class="harm">Outstanding ECY: <span>{{ "%.1f" | format(entity.outstanding_ecy / 1000000) }} million</span></p>
+        <p class="neutral">
+          Status: <strong style="color:#ff0;">{{ entity.lifetime.status.value }}</strong> 
+          • Entries: <strong>{{ entity.entries|length }}</strong>
+        </p>
+
+        <div class="grid-2" style="margin-top:0.8rem;">
+          <div>
+            <p class="harm big">
+              Outstanding LY: 
+              <span>{{ "%.2f"|format(entity.lifetime.outstanding_ly / 1000000) }} million</span>
+            </p>
+            <p class="harm">
+              Outstanding ECY: 
+              <span>{{ "%.2f"|format(entity.lifetime.outstanding_ecy / 1000000) }} million</span>
+            </p>
+          </div>
+          <div style="text-align:right; color:#ccc; font-size:0.9em;">
+            {% if entity.lifetime.years_to_repair %}
+              <p>Est. repair time:<br>
+                <strong style="color:#0f8;">{{ entity.lifetime.years_to_repair }} years</strong>
+              </p>
+            {% else %}
+              <p style="color:#f44;">Cannot repair<br>at current rate</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="margin-top:1rem; font-size:0.9em; color:#888;">
+          Measured: {{ entity.measurement_date }}
+        </div>
       </div>
     {% endfor %}
   {% else %}
-    <p class="neutral">No entities yet.</p>
+    <div class="balance-card">
+      <p class="neutral" style="font-size:1.2em; text-align:center;">
+        No entities in the ledger yet.<br><br>
+        The counting begins on December 21, 2025.
+      </p>
+    </div>
   {% endif %}
-  <p>
-    <a href="/submit" style="color:#33ff33; text-decoration:none;">
-      ⬡ Submit a new entry
+
+  <!-- Optional: Submit link (uncomment when ready)
+  <p style="margin-top:2rem; text-align:center;">
+    <a href="/submit" style="color:#33ff33; text-decoration:none; font-size:1.1em;">
+      ⬡ Propose a new entry or entity
     </a>
   </p>
+  -->
+
 </div>
+
+<style>
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  .big { font-size: 1.4em; font-weight: bold; }
+</style>
+
 {% endblock %}
