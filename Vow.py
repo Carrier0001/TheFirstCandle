@@ -20,8 +20,8 @@ app = Flask(__name__)
 # Paths — works locally and on Render
 # ------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FOLDER = os.path.join(BASE_DIR, "data")
-EVIDENCE_FOLDER = os.path.join(BASE_DIR, "evidence")
+DATA_FOLDER = os.path.join(BASE_DIR, "Data")
+EVIDENCE_FOLDER = os.path.join(BASE_DIR, "Evidence")
 
 MAX_FILE_SIZE_MB = 25
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".txt", ".mp4", ".mp3", ".webm"}
@@ -236,3 +236,4 @@ def methodology():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
