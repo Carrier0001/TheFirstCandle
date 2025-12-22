@@ -3,102 +3,206 @@
 {% block title %}Submit Entry{% endblock %}
 
 {% block content %}
+<div class="container submit-container">
+    <div class="submit-card">
+        <h1>Submit Entry</h1>
+        <p class="subtitle">Inscribe institutional harm or repair into the permanent record</p>
 
-<div class="container">
-  <form id="submitForm" class="form-grid">
-    <!-- Entity Info -->
-    <fieldset>
-      <legend>Entity Information</legend>
-      <div class="form-group">
-        <label for="entity_id">Entity ID</label>
-        <input type="text" id="entity_id" name="entity_id" required>
-      </div>
-      <div class="form-group">
-        <label for="year">Year</label>
-        <input type="number" id="year" name="year" required>
-      </div>
-    </fieldset>
+        <div class="notice">
+            <p>
+                <strong>All submissions require verifiable evidence.</strong><br>
+                Entries are reviewed by at least two independent validators. Only evidenced, neutrally described events are inscribed.<br>
+                Your submission is anonymous — no personal data or IP is collected.
+            </p>
+        </div>
 
-    <!-- Narrative -->
-    <fieldset>
-      <legend>Description of Event</legend>
-      <div class="form-group">
-        <label for="description">What happened?</label>
-        <textarea id="description" name="description" required></textarea>
-      </div>
-    </fieldset>
+        <form id="submitForm" enctype="multipart/form-data">
+            <!-- Entry Type -->
+            <fieldset class="section">
+                <legend>Entry Type <span class="required">*</span></legend>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="entry_type" value="harm" checked required>
+                        Record Institutional Harm
+                    </label>
+                    <label>
+                        <input type="radio" name="entry_type" value="surplus">
+                        Record Repair or Surplus (positive action)
+                    </label>
+                </div>
+            </fieldset>
 
-    <!-- Classification -->
-    <fieldset>
-      <legend>Classification</legend>
-      <div class="form-group">
-        <label for="harm_type">Type of Harm</label>
-        <select id="harm_type" name="harm_type">
-          {% for ht in harm_types %}
-            <option value="{{ ht }}">{{ ht }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="confidence">Confidence Level</label>
-        <select id="confidence" name="confidence">
-          <option value="LOW">Low</option>
-          <option value="MEDIUM" selected>Medium</option>
-          <option value="HIGH">High</option>
-        </select>
-      </div>
-    </fieldset>
+            <!-- Entity -->
+            <fieldset class="section">
+                <legend>Entity <span class="required">*</span></legend>
+                <div class="form-group">
+                    <label for="entity_id">Entity Name</label>
+                    <input type="text" id="entity_id" name="entity_id" placeholder="e.g., Meta Platforms, Inc." required>
+                    <small>Exact name as it should appear in the ledger</small>
+                </div>
+                <div class="form-group">
+                    <label for="year">Primary Year</label>
+                    <input type="number" id="year" name="year" min="-10000" max="10000" placeholder="2025" required>
+                    <small>Year the event occurred or was completed</small>
+                </div>
+            </fieldset>
 
-    <!-- Contribution -->
-    <fieldset>
-      <legend>Positive Contribution (optional)</legend>
-      <div class="form-group">
-        <label for="contribution">Contribution Type</label>
-        <select id="contribution" name="contribution">
-          <option value="">-- None --</option>
-          <option value="Healthcare">Healthcare</option>
-          <option value="Education">Education</option>
-          <option value="Humanitarian Aid">Humanitarian Aid</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-    </fieldset>
+            <!-- Description -->
+            <fieldset class="section">
+                <legend>Description <span class="required">*</span></legend>
+                <div class="form-group">
+                    <label for="description">What Happened</label>
+                    <textarea id="description" name="description" rows="7" placeholder="Describe the event in neutral, factual terms. Include who, what, when, and impact where known." required></textarea>
+                    <small>Avoid opinion, speculation, or inflammatory language.</small>
+                </div>
+            </fieldset>
 
-    <button type="submit" class="btn-submit">Submit Entry</button>
-  </form>
+            <!-- Classification (Harm only) -->
+            <fieldset class="section" id="harm-classification">
+                <legend>Harm Classification (if recording harm)</legend>
+                <div class="form-group">
+                    <label for="harm_type">Primary Harm Type</label>
+                    <select id="harm_type" name="harm_type">
+                        <option value="">— Select type —</option>
+                        {% for ht in harm_types %}
+                            <option value="{{ ht }}">{{ ht }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="confidence">Confidence Level <span class="required">*</span></label>
+                    <select id="confidence" name="confidence" required>
+                        <option value="HIGH">High — Primary sources (documents, recordings, official records)</option>
+                        <option value="MEDIUM" selected>Medium — Multiple corroborating reports</option>
+                        <option value="LOW">Low — Limited or indirect sources (rarely inscribed)</option>
+                    </select>
+                </div>
+            </fieldset>
 
-  <div id="result"></div>
+            <!-- Surplus (optional) -->
+            <fieldset class="section" id="surplus-section">
+                <legend>Surplus Contribution (if recording repair)</legend>
+                <div class="form-group">
+                    <label for="contribution">Contribution Type</label>
+                    <select id="contribution" name="contribution">
+                        <option value="">— None —</option>
+                        <option value="Transparency">Transparency / Disclosure</option>
+                        <option value="Restitution">Restitution / Compensation</option>
+                        <option value="Reform">Policy or Practice Reform</option>
+                        <option value="Healthcare">Healthcare Support</option>
+                        <option value="Education">Education Support</option>
+                        <option value="Humanitarian">Humanitarian Aid</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <!-- Evidence — MOST IMPORTANT -->
+            <fieldset class="section evidence-section">
+                <legend>Supporting Evidence <span class="required">*</span></legend>
+                <p class="evidence-note">
+                    The ledger only accepts verifiable testimony. Provide primary sources whenever possible.
+                </p>
+                <div class="form-group">
+                    <label for="evidence_files">Upload Files</label>
+                    <input type="file" id="evidence_files" name="evidence_files" multiple 
+                           accept=".pdf,.jpg,.jpeg,.png,.txt,.mp4,.mp3,.webm">
+                    <small>PDFs, images, text, video/audio. Multiple files supported.</small>
+                </div>
+                <div class="form-group">
+                    <label for="evidence_links">Public Links (optional)</label>
+                    <textarea id="evidence_links" name="evidence_links" rows="4" 
+                              placeholder="One URL per line&#10;e.g., https://nytimes.com/article...&#10;https://courtlistener.com/docket/..."></textarea>
+                    <small>News articles, court filings, official reports, archives</small>
+                </div>
+            </fieldset>
+
+            <!-- Optional note -->
+            <fieldset class="section">
+                <legend>Private Note to Validators (optional)</legend>
+                <div class="form-group">
+                    <textarea id="validator_note" name="validator_note" rows="4" 
+                              placeholder="Additional context for review (not published)"></textarea>
+                </div>
+            </fieldset>
+
+            <div class="submit-area">
+                <button type="submit" class="btn-submit">Submit for Validation</button>
+            </div>
+        </form>
+
+        <div id="result" class="result-message"></div>
+    </div>
+
+    <p class="page-closing">
+        Every wound becomes debt.<br>
+        Every debt awaits repair.<br>
+        The ledger is open.
+    </p>
 </div>
-
-<style>
-  .form-grid { display: flex; flex-direction: column; gap: 1.5rem; }
-  fieldset { border: 1px solid #ccc; padding: 1rem; border-radius: 6px; }
-  legend { font-weight: bold; margin-bottom: .5rem; }
-  .form-group { display: flex; flex-direction: column; margin-bottom: .75rem; }
-  label { font-weight: 600; margin-bottom: .25rem; }
-  input, textarea, select { padding: .5rem; border: 1px solid #ccc; border-radius: 4px; }
-  .btn-submit { padding: .75rem 1.5rem; background-color: #2c3e50; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
-  .btn-submit:hover { background-color: #1a252f; }
-</style>
 
 <script>
 document.getElementById("submitForm").onsubmit = async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
+    e.preventDefault();
+    const formData = new FormData(e.target);
 
-  const res = await fetch("/submit", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  });
+    // Optional: Show loading state
+    const submitBtn = document.querySelector('.btn-submit');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
 
-  const json = await res.json();
-  if (json.success) {
-    document.getElementById("result").innerHTML = `<p style="color:green">Entry submitted successfully! ID: ${json.entry_id}</p>`;
-  } else {
-    document.getElementById("result").innerHTML = `<p style="color:red">Error: ${json.error}</p>`;
-  }
+    try {
+        const res = await fetch("/submit", {
+            method: "POST",
+            body: formData  // Important: Use FormData directly for file uploads
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            document.getElementById("result").innerHTML = 
+                `<p class="success">Entry submitted successfully.<br>Tracking ID: <strong>${json.entry_id}</strong><br>You will not receive further notification — check the ledger for inscription.</p>`;
+            e.target.reset();
+        } else {
+            document.getElementById("result").innerHTML = 
+                `<p class="error">Submission failed: ${json.error || 'Unknown error'}</p>`;
+        }
+    } catch (err) {
+        document.getElementById("result").innerHTML = 
+            `<p class="error">Network error. Please try again.</p>`;
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
 };
 </script>
-{% endblock %}
 
+<style>
+    .submit-container { max-width: 900px; margin: 0 auto; padding: 1rem; }
+    .submit-card { background: #111; padding: 2rem; border-radius: 8px; border: 1px solid #333; }
+    .subtitle { opacity: 0.9; margin-bottom: 2rem; font-size: 1.1em; }
+    .notice { background: #222; border-left: 4px solid #ff9900; padding: 1.2rem; margin-bottom: 2rem; }
+    .section { border: 1px solid #444; padding: 1.5rem; border-radius: 6px; margin-bottom: 2rem; }
+    legend { font-weight: bold; font-size: 1.2em; padding: 0 0.5rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+    input[type="text"], input[type="number"], textarea, select {
+        width: 100%; padding: 0.8rem; background: #000; border: 1px solid #555; color: white; border-radius: 4px;
+    }
+    textarea { resize: vertical; }
+    small { display: block; margin-top: 0.4rem; opacity: 0.8; font-size: 0.9em; }
+    .required { color: #ff9900; }
+    .radio-group label { display: block; margin: 0.8rem 0; }
+    .radio-group input { margin-right: 0.8rem; width: auto; }
+    .evidence-section { border-color: #ff9900; background: #1a1100; }
+    .evidence-note { margin-bottom: 1rem; opacity: 0.9; }
+    .submit-area { text-align: center; margin: 3rem 0; }
+    .btn-submit { padding: 1rem 3rem; font-size: 1.2em; background: #003300; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-submit:hover { background: #004400; }
+    .btn-submit:disabled { background: #222; cursor: not-allowed; }
+    .result-message { margin-top: 2rem; text-align: center; font-size: 1.1em; }
+    .success { color: #00cc00; }
+    .error { color: #ff4444; }
+    .page-closing { text-align: center; margin-top: 4rem; opacity: 0.8; font-style: italic; }
+</style>
+{% endblock %}
