@@ -10,26 +10,26 @@
     Measured as of {{ entity.measurement_date }} • Entity Status: <strong>{{ entity.entity_state }}</strong>
   </p>
 
-  <!-- Current Year Balance — First -->
+  <!-- Current Year Balance – First -->
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
     <h3 style="font-size:1.8rem; margin-bottom:1.2rem; color:#0f0; text-shadow:0 0 6px #0f0;">
-      Current Year Balance ({{ entity.current_year.year }})
+      Current Year Balance ({{ entity.annual.year }})
     </h3>
     <div class="grid-2" style="gap:2rem;">
       <div style="line-height:2.2;">
-        <p class="harm" style="font-size:1.3rem;">Amplified Harm (LY): <strong>{{ "%.2f"|format(entity.current_year.harm_ly / 1000000) }} million</strong></p>
-        <p class="surplus" style="font-size:1.3rem;">Surplus Generated (LY): <strong>{{ "%.2f"|format(entity.current_year.surplus_ly / 1000000) }} million</strong></p>
+        <p class="harm" style="font-size:1.3rem;">Amplified Harm (LY): <strong>{{ "%.2f"|format(entity.annual.harm_ly / 1000000) }} million</strong></p>
+        <p class="surplus" style="font-size:1.3rem;">Surplus Generated (LY): <strong>{{ "%.2f"|format(entity.annual.surplus_ly / 1000000) }} million</strong></p>
       </div>
       <div style="line-height:2.2;">
-        <p class="{% if entity.current_year.outstanding_ly >= 0 %}surplus{% else %}harm{% endif %}" style="font-size:2rem; font-weight:bold;">
-          Net Change This Year: {{ "%.2f"|format(entity.current_year.outstanding_ly / 1000000) }} million LY
+        <p class="{% if entity.annual.outstanding_ly >= 0 %}surplus{% else %}harm{% endif %}" style="font-size:2rem; font-weight:bold;">
+          Net Change This Year: {{ "%.2f"|format(entity.annual.outstanding_ly / 1000000) }} million LY
         </p>
-        <p class="neutral" style="font-size:1.4rem;">Current Year Status: <strong style="color:#ff0;">{{ entity.current_year.status.value }}</strong></p>
+        <p class="neutral" style="font-size:1.4rem;">Current Year Status: <strong style="color:#ff0;">{{ entity.annual.status.value }}</strong></p>
       </div>
     </div>
   </div>
 
-  <!-- Lifetime Moral Balance — Clear and Centered -->
+  <!-- Lifetime Moral Balance – Clear and Centered -->
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2.5rem; text-align:center;">
     <h3 style="font-size:2rem; margin-bottom:2rem; color:#0f0; text-shadow:0 0 8px #0f0;">
       Lifetime Moral Balance
@@ -67,11 +67,11 @@
     </div>
   </div>
 
-  <!-- Moral Debt Trajectory — Full Stock Market Style -->
+  <!-- Moral Debt Trajectory – Full Stock Market Style -->
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
     <h3 style="font-size:1.6rem; margin-bottom:1rem;">Moral Debt Trajectory Over Time</h3>
     <p style="color:#aaa; font-size:1rem; margin-bottom:1.5rem;">
-      Cumulative outstanding Life-Years — like a stock chart (lower = deeper debt; rising = repair)
+      Cumulative outstanding Life-Years – like a stock chart (lower = deeper debt; rising = repair)
     </p>
     <div style="height:400px; background:#0a0a0a; border:1px solid #0f0; border-radius:8px; padding:1rem; box-shadow:0 0 20px rgba(0,255,0,0.4);">
       <canvas id="trajectoryChart"></canvas>
@@ -100,7 +100,7 @@
   </div>
   {% endif %}
 
-  <!-- Detailed Ledger Entries — Fully Restored -->
+  <!-- Detailed Ledger Entries – Fully Restored -->
   <h3 style="color:#fff; text-shadow:0 0 8px #0f0; font-size:2.2rem; margin:4rem 0 2rem; text-align:center;">Detailed Ledger Entries</h3>
   {% for harm_type, group in entries_by_type.items() %}
     <div class="balance-card" style="margin-bottom:2rem; padding:2rem;">
@@ -110,7 +110,7 @@
       <ul style="list-style:disc inside; line-height:2; font-size:1.1rem;">
         {% for entry in group|sort(attribute='year') %}
           <li style="margin:1rem 0;">
-            <strong>{{ entry.year }}</strong> —
+            <strong>{{ entry.year }}</strong> –
             {{ entry.description }}
             <br>
             <span style="color:#888; font-size:1rem;">
@@ -133,7 +133,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // === Moral Debt Trajectory — Stock Market Style ===
+  // === Moral Debt Trajectory – Stock Market Style ===
   const entries = [
     {% for entry in entity.entries %}
       { year: {{ entry.year }}, amplified_net: {{ entry.harm_ly + entry.surplus_ly }} },
@@ -218,7 +218,7 @@
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: 'Million Life-Years Lost →', color: '#ff4444' }, ticks: { color: '#aaa' }, grid: { color: 'rgba(0,255,0,0.1)' } },
+        x: { title: { display: true, text: 'Million Life-Years Lost ↑', color: '#ff4444' }, ticks: { color: '#aaa' }, grid: { color: 'rgba(0,255,0,0.1)' } },
         y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(0,255,0,0.1)' } }
       },
       plugins: { legend: { display: false }, title: { display: true, text: 'Scale of Institutional Harm', color: '#0f0', font: { size: 15 } } }
