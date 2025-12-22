@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Methodology{% endblock %}
+
+{% block content %}
+<div class="container methodology-card">
+    <h1>Methodology</h1>
+    <p class="subtitle">Verification, Evidence, Classification, Quantification, and Recording Standards</p>
+
+    <section>
+        <h2>Purpose</h2>
+        <p>
+            This page describes how interference with the ledger is detected, verified, classified, quantified, and recorded. 
+            It is written for independent verification and audit. The methodology does not infer intent, assign guilt, 
+            or evaluate the correctness of any underlying claim.
+        </p>
+    </section>
+
+    <section>
+        <h2>Core Principles</h2>
+        <ul>
+            <li><strong>Verify, then inscribe:</strong> No entry is recorded without sufficient evidence.</li>
+            <li><strong>Primary evidence first:</strong> Raw artifacts are preserved before interpretation.</li>
+            <li><strong>Immutability:</strong> Evidence is stored append-only in content-addressed systems.</li>
+            <li><strong>Public verifiability:</strong> Every entry links to evidence that can be independently checked.</li>
+            <li><strong>Proportionality:</strong> Quantification reflects measurable impact and is capped.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>What Qualifies as an Attack Record</h2>
+        <p>
+            An attack record documents an observable action that materially interferes with the availability, 
+            integrity, input quality, legitimacy, safety of participants, or procedural operation of the ledger.
+        </p>
+    </section>
+
+    <section>
+        <h2>Detection</h2>
+        <p>
+            Events may be detected through automated monitoring (e.g., traffic anomalies, firewall triggers, uptime loss), 
+            infrastructure notifications (hosting, registrar, or payment processor notices), or documented public actions 
+            such as court filings or official statements.
+        </p>
+    </section>
+
+    <section>
+        <h2>Evidence Capture</h2>
+        <ul>
+            <li>UTC timestamps (detection and inscription)</li>
+            <li>Raw logs, filings, screenshots, or packet captures</li>
+            <li>Cryptographic hashes of all artifacts</li>
+            <li>Content identifiers (CIDs) from distributed storage (IPFS/Arweave)</li>
+        </ul>
+        <p>
+            Evidence is preserved immediately and cannot be altered after capture.
+        </p>
+    </section>
+
+    <section>
+        <h2>Evidence Sufficiency Threshold</h2>
+        <p>
+            A public entry requires at least one primary artifact (e.g., log export, official notice, court filing) 
+            and one corroborating artifact (e.g., screenshot, secondary log, independent report). 
+            If this threshold is not met, the event is logged internally but not publicly inscribed.
+        </p>
+    </section>
+
+    <section>
+        <h2>Classification</h2>
+        <p>
+            Events are classified using the fixed taxonomy below. Classification describes <em>what</em> occurred, not <em>why</em>.
+        </p>
+        
+        <h3>Taxonomy of Attack Harms</h3>
+        <ol style="padding-left: 2.5em; margin-left: 0;">
+            <li><strong>Suppression</strong> — Attempts to block access (e.g., DDoS, ISP block, censorship)</li>
+            <li><strong>Sabotage</strong> — Attempts to corrupt or delete ledger data</li>
+            <li><strong>Disinformation</strong> — Coordinated narratives to delegitimize the ledger</li>
+            <li><strong>Flooding</strong> — Attempts to overwhelm with noise (e.g., spam or bogus submissions)</li>
+            <li><strong>Infiltration</strong> — Compromise attempts against guardians or validators</li>
+            <li><strong>Delegitimization</strong> — Legal or propaganda attacks on ledger authority</li>
+            <li><strong>Intimidation</strong> — Direct threats to stewards or witnesses</li>
+            <li><strong>Obstruction</strong> — Infrastructure or economic interference (e.g., payment processor block, hosting takedown)</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>Validation</h2>
+        <p>
+            Each entry requires independent review by at least two validators. Validators confirm evidence sufficiency, 
+            correct classification, neutral language, and accurate quantification. 
+            Validators may decline publication if standards are not met.
+        </p>
+    </section>
+
+    <section>
+        <h2>Quantification</h2>
+        <p>
+            Impact is quantified as a proportion of the underlying audited institutional harm the interference targeted. 
+            Multipliers are fixed, published, and applied uniformly based on scale, duration, reversibility, and coordination.
+        </p>
+        
+        <h3>Published Multipliers</h3>
+        <ul>
+            <li>Suppression: 0.1–0.2×</li>
+            <li>Sabotage (failed): 0.05× | (reversed success): 1.0×</li>
+            <li>Disinformation (coordinated smear): 0.3×</li>
+            <li>Flooding (coordinated): 0.2×</li>
+            <li>Infiltration (per targeted guardian): 1.0×</li>
+            <li>Delegitimization (lawsuit): 0.3× | (regulatory action): 0.5× | (state-level ban): 1.0×</li>
+            <li>Intimidation (doxxing): 0.2× | (credible threat of violence): 1.0×</li>
+            <li>Obstruction (payment block): 0.2× | (domain seizure): 0.5× | (hosting takedown): 1.0× | (failed on distributed backend): 2.0×</li>
+        </ul>
+        
+        <p>
+            <strong>Multi-vector escalation</strong> (≥2 categories employed by the same entity within 30 days): 
+            total attack debt × (1 + (n−1) × 0.5)<br>
+            <strong>Public failure premium</strong> (e.g., widely reported Streisand effect): +50%
+        </p>
+    </section>
+
+    <section>
+        <h2>Publication</h2>
+        <p>
+            Published entries include date, category, neutral description, evidence links (IPFS/Arweave CIDs), 
+            quantified impact, running balance for the entity (where attributable), and attribution confidence level.
+        </p>
+    </section>
+
+    <section>
+        <h2>Non-Inference Clause</h2>
+        <p>
+            Recording an interference act does not imply wrongdoing, guilt, or the validity of any underlying claim. 
+            It solely documents observable interference with a public accounting process.
+        </p>
+    </section>
+
+    <section>
+        <h2>Absence Clause</h2>
+        <p>
+            The absence of attack records during a period implies only that no qualifying interference 
+            meeting evidence thresholds was recorded.
+        </p>
+    </section>
+
+    <section>
+        <h2>System Resilience</h2>
+        <p>
+            Verified interference does not weaken the ledger.<br>
+            It is absorbed, classified, quantified, and inscribed as permanent testimony.<br>
+            The ledger becomes stronger with each recorded attempt to silence or obstruct it.<br>
+            The only path that reduces outstanding debt is public repair — acknowledged and recorded as Surplus.
+        </p>
+        <p class="closing">
+            Every wound becomes debt.<br>
+            Every debt awaits repair.<br>
+            The ledger is open.
+        </p>
+    </section>
+</div>
+
+<style>
+    /* Ensure consistent numbering alignment */
+    .methodology-card ol {
+        padding-left: 2.5em !important;
+        margin-left: 0 !important;
+    }
+    .methodology-card ol li {
+        margin-bottom: 0.8em;
+    }
+</style>
+{% endblock %}
