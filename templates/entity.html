@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ entity.entity_name }} | The Vow Ledger{% endblock %}
-
+ 
 {% block content %}
 <div style="max-width: 1100px; margin: 0 auto; padding: 1rem;">
   <h2 style="color:#fff; text-shadow:0 0 10px #0f0; font-size:3rem; text-align:center; margin:2rem 0;">
@@ -9,8 +9,9 @@
   <p style="text-align:center; color:#aaa; font-size:1.2rem; margin-bottom:3rem;">
     Measured as of {{ entity.measurement_date }} • Entity Status: <strong>{{ entity.entity_state }}</strong>
   </p>
-
-  <!-- Current Year Balance – First -->
+ 
+  <!-- Current Year Balance – only shown if annual data exists -->
+  {% if entity.annual %}
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
     <h3 style="font-size:1.8rem; margin-bottom:1.2rem; color:#0f0; text-shadow:0 0 6px #0f0;">
       Current Year Balance ({{ entity.annual.year }})
@@ -28,13 +29,22 @@
       </div>
     </div>
   </div>
-
-  <!-- Lifetime Moral Balance – Clear and Centered -->
+  {% else %}
+  <!-- Ancient/Eternal entity – no annual view available -->
+  <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem; text-align:center;">
+    <p style="color:#aaa; font-size:1.2rem;">
+      ⚠ This entity predates reliable annual measurement.<br>
+      <span style="color:#888; font-size:1rem;">Lifetime totals are shown below. Annual view is not available for ancient or eternal entities.</span>
+    </p>
+  </div>
+  {% endif %}
+ 
+  <!-- Lifetime Moral Balance -->
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2.5rem; text-align:center;">
     <h3 style="font-size:2rem; margin-bottom:2rem; color:#0f0; text-shadow:0 0 8px #0f0;">
       Lifetime Moral Balance
     </h3>
-
+ 
     <div style="margin:2rem 0;">
       <p style="font-size:1.4rem; color:#aaa;">Total Outstanding Moral Debt</p>
       <p class="harm" style="font-size:3.5rem; font-weight:bold; margin:0.5rem 0;">
@@ -42,7 +52,7 @@
       </p>
       <p style="font-size:1.2rem; color:#888;">({{ "%.2f"|format(entity.lifetime.outstanding_ecy / 1000000) }} million ECY)</p>
     </div>
-
+ 
     <div class="grid-2" style="gap:3rem; margin-top:3rem;">
       <div style="line-height:2.2;">
         <p class="harm" style="font-size:1.3rem;">Total Amplified Harm (LY): <strong>{{ "%.2f"|format(entity.lifetime.harm_ly / 1000000) }} million</strong></p>
@@ -53,7 +63,7 @@
         <p class="surplus">Total Surplus Credited (ECY): <strong>{{ "%.2f"|format(entity.lifetime.surplus_ecy / 1000000) }} million</strong></p>
       </div>
     </div>
-
+ 
     <div style="margin-top:3rem;">
       <p class="neutral" style="font-size:1.4rem;">Lifetime Status: <strong style="color:#ff0; font-size:1.8rem;">{{ entity.lifetime.status.value }}</strong></p>
       {% if entity.lifetime.years_to_repair %}
@@ -66,8 +76,8 @@
       {% endif %}
     </div>
   </div>
-
-  <!-- Moral Debt Trajectory – Full Stock Market Style -->
+ 
+  <!-- Moral Debt Trajectory -->
   <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
     <h3 style="font-size:1.6rem; margin-bottom:1rem;">Moral Debt Trajectory Over Time</h3>
     <p style="color:#aaa; font-size:1rem; margin-bottom:1.5rem;">
@@ -77,7 +87,7 @@
       <canvas id="trajectoryChart"></canvas>
     </div>
   </div>
-
+ 
   <!-- Harm Breakdown Bar Chart -->
   {% if entity.harm_breakdown %}
   <div class="balance-card" style="margin-bottom:2.5rem; padding:1.8rem;">
@@ -85,7 +95,7 @@
     <div style="height:220px; background:#111; border:1px solid #0f0; border-radius:8px; padding:0.8rem; box-shadow:0 0 10px rgba(0,255,0,0.3); margin-bottom:1.5rem;">
       <canvas id="harmChart"></canvas>
     </div>
-
+ 
     <ul style="list-style:square inside; font-size:1.1rem; line-height:2;">
       {% for harm_type, data in entity.harm_breakdown.items() %}
         <li style="margin:0.8rem 0;">
@@ -99,8 +109,8 @@
     </ul>
   </div>
   {% endif %}
-
-  <!-- Detailed Ledger Entries – Fully Restored -->
+ 
+  <!-- Detailed Ledger Entries -->
   <h3 style="color:#fff; text-shadow:0 0 8px #0f0; font-size:2.2rem; margin:4rem 0 2rem; text-align:center;">Detailed Ledger Entries</h3>
   {% for harm_type, group in entries_by_type.items() %}
     <div class="balance-card" style="margin-bottom:2rem; padding:2rem;">
@@ -124,13 +134,13 @@
       </ul>
     </div>
   {% endfor %}
-
+ 
 </div>
-
+ 
 <p style="text-align:center; margin:5rem 0;">
   <a href="/" style="color:#33ff33; font-size:1.4rem; text-decoration:none;">← Back to Ledger Index</a>
 </p>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   // === Moral Debt Trajectory – Stock Market Style ===
@@ -139,13 +149,13 @@
       { year: {{ entry.year }}, amplified_net: {{ entry.harm_ly + entry.surplus_ly }} },
     {% endfor %}
   ];
-
+ 
   const yearMap = {};
   entries.forEach(e => {
     if (!yearMap[e.year]) yearMap[e.year] = 0;
     yearMap[e.year] += e.amplified_net;
   });
-
+ 
   const years = Object.keys(yearMap).sort((a,b) => a - b);
   const dataPoints = [];
   let running = 0;
@@ -153,7 +163,7 @@
     running += yearMap[y];
     dataPoints.push({ x: parseInt(y), y: running / 1000000 });
   });
-
+ 
   const ctx = document.getElementById('trajectoryChart').getContext('2d');
   new Chart(ctx, {
     type: 'line',
@@ -195,7 +205,7 @@
       }
     }
   });
-
+ 
   // === Harm Breakdown Bar Chart ===
   {% if entity.harm_breakdown %}
   const harmCtx = document.getElementById('harmChart').getContext('2d');
@@ -209,7 +219,7 @@
       borderWidth: 2
     }]
   };
-
+ 
   new Chart(harmCtx, {
     type: 'bar',
     data: harmData,
@@ -226,7 +236,7 @@
   });
   {% endif %}
 </script>
-
+ 
 <style>
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
   @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
