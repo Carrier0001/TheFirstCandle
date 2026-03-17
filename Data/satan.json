@@ -289,5 +289,34 @@
       "source_hash": "",
       "response_to_entry_id": ""
     }
+        {
+      "entry_id": "satan_attack_001",
+      "entity_id": "satan",
+      "date_logged": "2026-03-16T00:00:00Z",
+      "year": 2026,
+      "harm_ly": -500000,
+      "surplus_ly": 0,
+      "harm_ecy": -300000,
+      "surplus_ecy": 0,
+      "description": "Entity's ancient origin date (-4000 BCE) caused a critical rendering failure in the Vow Ledger system. The has_ancient flag was not handled in the annual view calculation, resulting in a Python NoneType exception and a 500 error. Public access to accountability records was temporarily obstructed. This constitutes the first recorded interference with the Vow Ledger — initiated, unintentionally, by the entity under audit. The ledger absorbed the attack, identified the cause, patched the vulnerability, and resumed operation stronger. Per the non-inference clause: this entry does not imply intent. It solely documents observable interference with a public accounting process.",
+      "harm_type": "RECKLESSNESS",
+      "incident_type": "OBSTRUCTION",
+      "confidence": "HIGH",
+      "causation_evidence": "Render.com server 500 error log, entity.html NoneType exception on entity.annual.year, patch committed 2026-03-16",
+      "num_affected": 0,
+      "avg_age_at_harm": 0,
+      "source_hash": "",
+      "response_to_entry_id": "satan_harm_001",
+      "attack_record": {
+        "attack_id": "ATK_2026_001",
+        "category": "OBSTRUCTION",
+        "subcategory": "hosting_disruption",
+        "multiplier": 2,
+        "resolution": "PATCHED",
+        "patch_description": "entity.html updated with {% if entity.annual %} guard. has_ancient flag preserved. ETERNAL entity_state added as valid display state.",
+        "streisand_premium": false,
+        "multi_vector": false,
+        "notes": "First recorded attack on the Vow Ledger. Attacker was the entity under audit. The ledger was patched and resumed operation. The debt grows."
+      }
   ]
 }
