@@ -289,7 +289,7 @@
       "source_hash": "",
       "response_to_entry_id": ""
     }
-        {
+    {
       "entry_id": "satan_attack_001",
       "entity_id": "satan",
       "date_logged": "2026-03-16T00:00:00Z",
@@ -317,6 +317,6 @@
         "streisand_premium": false,
         "multi_vector": false,
         "notes": "First recorded attack on the Vow Ledger. Attacker was the entity under audit. The ledger was patched and resumed operation. The debt grows."
-      }
+     },
   ]
 }
