@@ -70,7 +70,7 @@
       "surplus_ly": 0,
       "harm_ecy": -19000000,
       "surplus_ecy": 0,
-      "description": "Modern Satanic Panic revivals (1980s\u20132020s): False ritual abuse accusations resulting in wrongful convictions, family destruction, and cultural fear",
+      "description": "Modern Satanic Panic revivals (1980s–2020s): False ritual abuse accusations resulting in wrongful convictions, family destruction, and cultural fear",
       "harm_type": "RECKLESSNESS",
       "incident_type": "MORAL_PANIC",
       "confidence": "HIGH",
@@ -288,7 +288,7 @@
       "avg_age_at_harm": 0,
       "source_hash": "",
       "response_to_entry_id": ""
-    }
+    },
     {
       "entry_id": "satan_attack_001",
       "entity_id": "satan",
