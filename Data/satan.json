@@ -317,6 +317,7 @@
         "streisand_premium": false,
         "multi_vector": false,
         "notes": "First recorded attack on the Vow Ledger. Attacker was the entity under audit. The ledger was patched and resumed operation. The debt grows."
-     },
-  }
+      }
+    }
+  ]
 }
