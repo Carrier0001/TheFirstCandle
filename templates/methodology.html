@@ -14,7 +14,7 @@
         </p>
         <ul>
             <li><strong>Harm</strong> — Measurable effects on human life-years (LY) and ecosystem capacity (ECY)</li>
-            <li><strong>Interference</strong> — Measurable actions affecting the availability, integrity, or operation of the ledger</li>
+            <li><strong>Interference</strong> — Measurable actions affecting the availability, integrity, or operation of the ledger itself</li>
         </ul>
         <p>
             The methodology is designed for independent verification and audit. It does not assign intent, determine legal liability, 
@@ -27,153 +27,360 @@
         <ul>
             <li><strong>Verify, then inscribe:</strong> No entry is recorded without sufficient evidence.</li>
             <li><strong>Primary evidence first:</strong> Raw artifacts are preserved before interpretation.</li>
-            <li><strong>Impact over narrative:</strong> Quantification is based on observable outcomes.</li>
-            <li><strong>Immutability:</strong> Records are append-only and content-addressed.</li>
-            <li><strong>Public verifiability:</strong> Evidence is independently checkable.</li>
-            <li><strong>Non-inference:</strong> Inclusion does not imply guilt or wrongdoing.</li>
+            <li><strong>Intent multiplies impact:</strong> Deliberate harm weights higher than negligence.</li>
+            <li><strong>Immutability:</strong> Records are append-only, never deleted (retraction with explanation only).</li>
+            <li><strong>Public verifiability:</strong> Every entry links to cryptographic evidence hashes.</li>
+            <li><strong>Non-inference:</strong> Inclusion does not imply guilt, criminal liability, or moral condemnation.</li>
         </ul>
     </section>
 
-    <!-- ===================== HARM ===================== -->
+    <!-- ===================== PART 1: HARM ===================== -->
 
     <section>
-        <h2>Harm Accountability (LY / ECY)</h2>
+        <h2>Part 1: Harm Accountability (LY / ECY)</h2>
 
         <h3>What Is Measured</h3>
         <ul>
-            <li><strong>Life-Years (LY):</strong> Estimated years of human life lost due to preventable outcomes</li>
-            <li><strong>Ecosystem-Capacity-Years (ECY):</strong> Estimated years of lost ecosystem function</li>
+            <li><strong>Life-Years (LY):</strong> Years of human life lost due to preventable institutional action or inaction</li>
+            <li><strong>Ecosystem-Capacity-Years (ECY):</strong> Years of ecosystem function or regenerative capacity lost</li>
         </ul>
 
         <h3>Life-Years Calculation</h3>
         <p>
-            Life-Years Lost = Regional Life Expectancy − Age at Death
+            <code>Life-Years Lost = Life Expectancy (year, region) − Age at Death</code>
         </p>
         <p>
-            Included only where a plausible, evidence-supported causal link exists.
+            Counted only where a plausible, evidence-supported causal link exists between institutional action and preventable death.
+        </p>
+        <p>
+            <strong>Example:</strong> A 25-year-old killed in Gaza (life expectancy 73) = <strong>−48 LY</strong>
         </p>
 
-        <h3>Ecosystem-Capacity Definition</h3>
+        <h3>Ecosystem-Capacity-Years (ECY)</h3>
         <p>
-            An Ecosystem-Capacity-Year (ECY) represents one year of functional ecosystem service 
-            (e.g., carbon sequestration, biodiversity support, regeneration).
+            One ECY represents one year of functional ecosystem service loss. Calculation methods include:
         </p>
         <ul>
-            <li>Carbon: CO₂e × atmospheric persistence</li>
-            <li>Land: area × regeneration time</li>
-            <li>Biodiversity: disruption × recovery timeframe</li>
+            <li><strong>Carbon:</strong> Metric tons CO₂e × years of atmospheric persistence</li>
+            <li><strong>Land:</strong> Hectares lost × years for natural regeneration</li>
+            <li><strong>Biodiversity:</strong> Habitat disruption × species recovery timeframe</li>
         </ul>
 
-        <h3>Impact Multipliers</h3>
-        <ul>
-            <li>Negligence: 1×</li>
-            <li>Recklessness: 2×</li>
-            <li>Deliberate: 5×</li>
-            <li>Systemic: 8×</li>
-            <li>Concealment: 10×</li>
-        </ul>
-
+        <h3>Intent Multipliers (harm_type enum)</h3>
         <p>
-            Multipliers adjust magnitude but do not determine classification.
+            Each entry receives a harm_type from the fixed taxonomy below. The multiplier is applied to raw LY/ECY values before recording.
         </p>
+
+        <table class="methodology-table">
+            <thead>
+                <tr><th>harm_type</th><th>Multiplier</th><th>Definition</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>NEGLIGENCE</strong></td><td>1×</td><td>Failed to prevent foreseeable harm</td></tr>
+                <tr><td><strong>RECKLESSNESS</strong></td><td>2×</td><td>Knew risk, proceeded anyway</td></tr>
+                <tr><td><strong>DELIBERATE</strong></td><td>5×</td><td>Intended the harm</td></tr>
+                <tr><td><strong>SYSTEMIC</strong></td><td>8×</td><td>Harm embedded in policy or institutional structure</td></tr>
+                <tr><td><strong>COVER_UP</strong></td><td>10×</td><td>Actively concealed evidence of harm</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Incident Types (causation categories)</h3>
+        <p>
+            Each entry receives exactly one incident_type describing the causal mechanism:
+        </p>
+
+        <h4>Violence & Physical Harm</h4>
+        <ul>
+            <li><strong>DIRECT_VIOLENCE</strong> — Shooting, execution, assault, use of force</li>
+            <li><strong>MILITARY_CAMPAIGN</strong> — Organized military action with documented civilian impact</li>
+            <li><strong>SYSTEMIC_POLICY</strong> — Death or harm from institutional policy (e.g., prison conditions, border policies)</li>
+        </ul>
+
+        <h4>Governance & Security Failures</h4>
+        <ul>
+            <li><strong>NEGLIGENCE</strong> — Preventable death from inaction or failure to protect</li>
+            <li><strong>SECURITY_FAILURE</strong> — Preventable intelligence or operational failure</li>
+            <li><strong>GOVERNANCE_FAILURE</strong> — Systemic breakdown of governance functions</li>
+            <li><strong>DEMOCRATIC_EROSION</strong> — Undermining democratic institutions, judicial independence, or civil liberties</li>
+        </ul>
+
+        <h4>Accountability & Rights Violations</h4>
+        <ul>
+            <li><strong>LEGAL_SUPPRESSION</strong> — Lawsuits or legal actions to suppress accountability or evidence</li>
+            <li><strong>INTIMIDATION</strong> — Threats against witnesses, victims, validators, or stewards</li>
+            <li><strong>POLITICAL_SUPPRESSION</strong> — Targeting of political opponents, critics, or journalists</li>
+            <li><strong>CORRUPTION_ALLEGATION</strong> — Documented corruption charges (bribery, fraud, breach of trust)</li>
+        </ul>
+
+        <h4>Environmental & Medical</h4>
+        <ul>
+            <li><strong>ENVIRONMENTAL</strong> — Pollution, ecosystem destruction, carbon emissions, biodiversity loss</li>
+            <li><strong>MEDICAL_DENIAL</strong> — Denied medical care, treatment, or insurance coverage</li>
+        </ul>
+
+        <h4>International Law</h4>
+        <ul>
+            <li><strong>WAR_CRIMES_ALLEGATION</strong> — Documented violations of international humanitarian law</li>
+            <li><strong>ILLEGAL_SETTLEMENTS</strong> — Territorial violations under international law</li>
+        </ul>
+
+        <h4>Surplus (Repair Actions — positive values)</h4>
+        <ul>
+            <li><strong>DIPLOMATIC_SUCCESS</strong> — Agreements that reduce future harm or conflict</li>
+            <li><strong>ECONOMIC_DEVELOPMENT</strong> — Measurable quality-of-life or poverty-reduction improvements</li>
+            <li><strong>NATIONAL_SECURITY</strong> — Defense capabilities that protect human life</li>
+            <li><strong>POLITICAL_STABILITY</strong> — Governance continuity with verified positive outcomes</li>
+        </ul>
     </section>
 
-    <!-- ===================== INTERFERENCE ===================== -->
+    <!-- ===================== PART 2: INTERFERENCE ===================== -->
 
     <section>
-        <h2>Interference Accountability</h2>
+        <h2>Part 2: Interference Accountability (Attacks on the Ledger)</h2>
         <p>
             Interference records document actions that materially affect ledger availability, integrity, input quality, 
-            or operational continuity.
+            legitimacy, or operational continuity.
         </p>
 
         <h3>Detection</h3>
         <p>
-            Events may be detected through automated monitoring (traffic anomalies, uptime loss), 
-            infrastructure notifications, or documented public actions such as court filings.
+            Events may be detected through:
         </p>
-
-        <h3>Classification</h3>
-        <ol>
-            <li><strong>Suppression</strong> — Blocking access (e.g., DDoS, censorship)</li>
-            <li><strong>Sabotage</strong> — Data corruption or deletion attempts</li>
-            <li><strong>Disinformation</strong> — Coordinated credibility attacks</li>
-            <li><strong>Flooding</strong> — Noise or spam injection</li>
-            <li><strong>Infiltration</strong> — Unauthorized access attempts</li>
-            <li><strong>Delegitimization</strong> — Legal or narrative challenges</li>
-            <li><strong>Intimidation</strong> — Threats to participants</li>
-            <li><strong>Obstruction</strong> — Infrastructure or financial disruption</li>
-        </ol>
-
-        <h3>Quantification</h3>
-        <p>
-            Interference impact is quantified relative to its effect on ledger operation and availability.
-        </p>
-
         <ul>
-            <li>Suppression: 0.1–0.2×</li>
-            <li>Sabotage (failed): 0.05× | (reversed success): 1.0×</li>
-            <li>Disinformation: 0.3×</li>
-            <li>Flooding: 0.2×</li>
-            <li>Infiltration: 1.0× per target</li>
-            <li>Delegitimization: 0.3–1.0×</li>
-            <li>Intimidation: 0.2–1.0×</li>
-            <li>Obstruction: 0.2–2.0×</li>
+            <li>Automated monitoring (traffic anomalies, uptime loss, latency spikes)</li>
+            <li>Infrastructure notifications (hosting, registrar, payment processor, DNS provider)</li>
+            <li>Documented public actions (court filings, official statements, takedown notices)</li>
         </ul>
 
+        <h3>Interference Classification (What occurred)</h3>
+        <ol>
+            <li><strong>Suppression</strong> — Blocking access (DDoS, ISP block, DNS filtering, censorship)</li>
+            <li><strong>Sabotage</strong> — Data corruption, deletion attempts, or unauthorized modification</li>
+            <li><strong>Disinformation</strong> — Coordinated narratives to delegitimize or discredit the ledger</li>
+            <li><strong>Flooding</strong> — Overwhelming with noise, spam, or bogus submissions</li>
+            <li><strong>Infiltration</strong> — Unauthorized access attempts against guardians, validators, or infrastructure</li>
+            <li><strong>Delegitimization</strong> — Legal or propaganda attacks on ledger authority or legitimacy</li>
+            <li><strong>Intimidation</strong> — Direct threats, doxxing, or harassment of stewards, witnesses, or validators</li>
+            <li><strong>Obstruction</strong> — Infrastructure or economic interference (payment processor block, registrar hold, hosting takedown)</li>
+        </ol>
+
+        <h3>Interference Multipliers</h3>
         <p>
-            <strong>Multi-vector escalation:</strong> Additional categories increase total impact.<br>
-            <strong>Amplification:</strong> Widely reported interference may increase measured impact.
+            Impact is quantified based on scale, duration, reversibility, and coordination level.
+        </p>
+
+        <table class="methodology-table">
+            <thead>
+                <tr><th>Interference Type</th><th>Multiplier</th><th>Condition</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Suppression</td><td>0.1–0.2×</td><td>Duration and scale</td></tr>
+                <tr><td>Sabotage</td><td>0.05×</td><td>Failed attempt</td></tr>
+                <tr><td>Sabotage</td><td>1.0×</td><td>Successful, later reversed</td></tr>
+                <tr><td>Disinformation</td><td>0.3×</td><td>Coordinated campaign</td></tr>
+                <tr><td>Flooding</td><td>0.2×</td><td>Coordinated spam or noise</td></tr>
+                <tr><td>Infiltration</td><td>1.0×</td><td>Per targeted guardian or validator</td></tr>
+                <tr><td>Delegitimization</td><td>0.3×</td><td>Lawsuit or legal action</td></tr>
+                <tr><td>Delegitimization</td><td>0.5×</td><td>Regulatory action</td></tr>
+                <tr><td>Delegitimization</td><td>1.0×</td><td>State-level ban or prohibition</td></tr>
+                <tr><td>Intimidation</td><td>0.2×</td><td>Doxxing or harassment</td></tr>
+                <tr><td>Intimidation</td><td>1.0×</td><td>Credible threat of violence</td></tr>
+                <tr><td>Obstruction</td><td>0.2×</td><td>Payment processor block</td></tr>
+                <tr><td>Obstruction</td><td>0.5×</td><td>Domain seizure</td></tr>
+                <tr><td>Obstruction</td><td>1.0×</td><td>Hosting takedown</td></tr>
+                <tr><td>Obstruction</td><td>2.0×</td><td>Failed on distributed backend (Streisand effect)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Multi-Vector Escalation</h3>
+        <p>
+            If the same entity employs two or more interference categories within 30 days:
+        </p>
+        <p>
+            <code>Total = Base Debt × (1 + (n − 1) × 0.5)</code>
+        </p>
+        <p>
+            <strong>Example:</strong> 3 categories → 2.0× multiplier
+        </p>
+
+        <h3>Public Failure Premium</h3>
+        <p>
+            If interference becomes widely reported and results in increased attention to the ledger (Streisand effect): <strong>+50%</strong>
         </p>
     </section>
 
-    <!-- ===================== EVIDENCE ===================== -->
+    <!-- ===================== PART 3: EVIDENCE ===================== -->
 
     <section>
-        <h2>Evidence Standards</h2>
+        <h2>Part 3: Evidence Standards</h2>
+
+        <h3>Evidence Capture Requirements</h3>
         <ul>
-            <li>UTC timestamps</li>
-            <li>Primary artifacts (logs, filings, notices)</li>
-            <li>Corroborating artifacts (independent reports, secondary logs)</li>
-            <li>Cryptographic hashes</li>
-            <li>Distributed storage identifiers (IPFS / Arweave)</li>
+            <li>UTC timestamps (detection and inscription)</li>
+            <li>Primary artifacts (raw logs, official filings, court notices, death certificates, UN reports)</li>
+            <li>Corroborating artifacts (screenshots, secondary logs, independent media, NGO reports)</li>
+            <li>Cryptographic hashes (SHA-256) of all artifacts</li>
+            <li>Distributed storage identifiers (IPFS / Arweave CIDs) where available</li>
         </ul>
 
         <h3>Publication Threshold</h3>
         <p>
-            Public entries require at least one primary artifact and one independent corroborating source.
-        </p>
-    </section>
-
-    <!-- ===================== VALIDATION ===================== -->
-
-    <section>
-        <h2>Validation</h2>
-        <p>
-            Each entry is independently reviewed by at least two validators to confirm:
+            A public entry requires:
         </p>
         <ul>
-            <li>Evidence sufficiency</li>
-            <li>Correct classification</li>
-            <li>Accurate quantification</li>
-            <li>Neutral language</li>
+            <li><strong>At least one primary artifact</strong> (log export, official notice, court filing, primary source document)</li>
+            <li><strong>At least one corroborating artifact</strong> (screenshot, secondary log, independent report, media coverage)</li>
         </ul>
+        <p>
+            If this threshold is not met, the event is logged internally but not publicly inscribed.
+        </p>
+
+        <h3>Confidence Levels</h3>
+        <table class="methodology-table">
+            <thead>
+                <tr><th>Confidence</th><th>Standard</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>LOW</strong></td><td>Anecdotal, uncorroborated, or single source</td></tr>
+                <tr><td><strong>MEDIUM</strong></td><td>Corroborated but single primary source</td></tr>
+                <tr><td><strong>HIGH</strong></td><td>Multiple independent primary sources + corroborating artifacts</td></tr>
+            </tbody>
+        </table>
     </section>
 
-    <!-- ===================== BALANCE ===================== -->
+    <!-- ===================== PART 4: VALIDATION ===================== -->
 
     <section>
-        <h2>Balance & Repair</h2>
+        <h2>Part 4: Validation & Publication</h2>
+
+        <h3>Validation Process</h3>
         <p>
-            Total impact is tracked as a cumulative balance:
+            Each entry requires independent review by at least two validators who confirm:
         </p>
+        <ul>
+            <li>Evidence sufficiency (meeting the primary + corroborating threshold)</li>
+            <li>Correct classification (harm_type, incident_type, or interference category)</li>
+            <li>Accurate quantification (raw LY/ECY values and multiplier application)</li>
+            <li>Neutral, non-inflammatory language</li>
+        </ul>
         <p>
-            Balance = Σ(Harm × Multipliers) − Σ(Verified Repair Actions)
+            Validators may decline publication if standards are not met. Validators cannot be the same as the submitter.
         </p>
 
+        <h3>Published Entry Contains</h3>
+        <ul>
+            <li>Date logged (UTC ISO format)</li>
+            <li>Category (Harm or Interference)</li>
+            <li>Neutral description</li>
+            <li>Evidence hashes and/or links</li>
+            <li>Quantified impact (raw × multiplier)</li>
+            <li>Running balance for the entity (where attributable)</li>
+            <li>Attribution confidence level (LOW/MEDIUM/HIGH)</li>
+        </ul>
+
+        <h3>Entity States</h3>
+        <table class="methodology-table">
+            <thead>
+                <tr><th>State</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>ACTIVE</strong></td><td>Currently tracked, accepting new entries</td></tr>
+                <tr><td><strong>PENDING_VALIDATION</strong></td><td>Awaiting validator review (initial state for new entities)</td></tr>
+                <tr><td><strong>ACCRUING</strong></td><td>Outstanding debt, no surplus repair activity</td></tr>
+                <tr><td><strong>STABILIZED</strong></td><td>Outstanding debt with some surplus repair</td></tr>
+                <tr><td><strong>REPAIRED</strong></td><td>Debt fully offset by surplus (balance ≥ 0 for both LY and ECY)</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ===================== PART 5: BALANCE & REPAIR ===================== -->
+
+    <section>
+        <h2>Part 5: Balance & Repair Mechanics</h2>
+
+        <h3>Outstanding Debt Calculation</h3>
         <p>
-            Repair actions (“Surplus”) include verifiable efforts that measurably reduce harm or restore capacity.
+            For each entity, outstanding debt is calculated as:
         </p>
+        <p>
+            <code>Outstanding_LY = Σ(Harm_LY × Intent_Multiplier) + Σ(Surplus_LY)</code>
+        </p>
+        <p>
+            <code>Outstanding_ECY = Σ(Harm_ECY × Intent_Multiplier) + Σ(Surplus_ECY)</code>
+        </p>
+        <ul>
+            <li>Harm values are <strong>negative</strong> (loss)</li>
+            <li>Surplus values are <strong>positive</strong> (repair)</li>
+            <li>A <strong>negative</strong> outstanding balance = debt remains</li>
+            <li>A <strong>zero or positive</strong> outstanding balance = REPAIRED status</li>
+        </ul>
+
+        <h4>Worked Example (Netanyahu — simplified)</h4>
+        <ul>
+            <li>Gaza military campaign: −8,500,000 LY × 8× (SYSTEMIC) = −68,000,000 LY</li>
+            <li>Abraham Accords (surplus): +5,800,000 LY</li>
+            <li><strong>Outstanding = −68,000,000 + 5,800,000 = −62,200,000 LY (ACCRUING)</strong></li>
+        </ul>
+
+        <h3>Debt Reduction (Surplus)</h3>
+        <p>
+            Debt may only be reduced through verifiable public repair actions:
+        </p>
+        <ul>
+            <li>Policy reforms that measurably save future lives</li>
+            <li>Diplomatic agreements that reduce conflict or harm</li>
+            <li>Environmental restoration or carbon removal</li>
+            <li>Restitution, reparations, or accountability mechanisms</li>
+            <li>Institutional reforms that prevent recurrence</li>
+        </ul>
+        <p>
+            Surplus does not auto-accrue. It must be claimed and verified through the same evidence standards as harm.
+        </p>
+
+        <h3>Status Determination</h3>
+        <table class="methodology-table">
+            <thead>
+                <tr><th>Condition</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Outstanding_LY ≥ 0 AND Outstanding_ECY ≥ 0</td><td>REPAIRED</td></tr>
+                <tr><td>Any surplus exists but outstanding < 0</td><td>STABILIZED</td></tr>
+                <tr><td>No surplus, outstanding < 0</td><td>ACCRUING</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Years to Repair (Estimate)</h3>
+        <p>
+            If outstanding debt is negative and surplus activity exists:
+        </p>
+        <p>
+            <code>Years to Repair = |Outstanding_LY| / (Average annual surplus over last 5 years)</code>
+        </p>
+        <p>
+            Estimates are informational only and do not affect the ledger balance.
+        </p>
+    </section>
+
+    <!-- ===================== PART 6: DISPUTES ===================== -->
+
+    <section>
+        <h2>Part 6: Disputes & Retraction</h2>
+
+        <h3>Challenge Process</h3>
+        <p>
+            Any recorded entry may be disputed with new evidence. Dispute triggers re-validation by two new validators who were not involved in the original validation.
+        </p>
+
+        <h3>Retraction (Not Deletion)</h3>
+        <p>
+            If an entry is overturned:
+        </p>
+        <ul>
+            <li>The entry is marked <strong>"RETRACTED"</strong> with a public reason</li>
+            <li>The original entry remains visible (append-only principle)</li>
+            <li>Retracted entries do not contribute to outstanding debt</li>
+            <li>Historical balance recalculations are logged as corrections</li>
+        </ul>
     </section>
 
     <!-- ===================== CLAUSES ===================== -->
@@ -181,39 +388,102 @@
     <section>
         <h2>Non-Inference Clause</h2>
         <p>
-            Recording an event does not imply legal liability, guilt, or moral judgment.
+            Recording an interference act or harm does not imply:
+        </p>
+        <ul>
+            <li>Criminal guilt or legal liability</li>
+            <li>Moral condemnation or wrongdoing</li>
+            <li>Validity of any underlying political or legal claim</li>
+        </ul>
+        <p>
+            The ledger solely documents observable impact on humans, ecosystems, or this accounting process.
         </p>
     </section>
 
     <section>
         <h2>Absence Clause</h2>
         <p>
-            Absence of records does not imply absence of impact.
+            The absence of records during a period implies only that no qualifying event meeting evidence thresholds was detected and verified. 
+            Absence does not imply absence of impact.
         </p>
     </section>
 
     <section>
-        <h2>System Behavior</h2>
+        <h2>System Resilience</h2>
         <p>
-            The ledger records and preserves observable impact.  
-            Entries are append-only and remain subject to audit, challenge, and revision.
+            Verified harm or interference does not weaken the ledger.
         </p>
-
-        <p class="closing">
-            All recorded impact persists.<br>
-            All balances are subject to repair.<br>
-            The ledger remains open.
+        <p>
+            Each recorded attempt to silence, obstruct, evade, or cause harm is absorbed, classified, quantified, and inscribed as permanent testimony.
+        </p>
+        <p>
+            The ledger becomes stronger with each recorded act.
         </p>
     </section>
+
+    <section>
+        <h2>Attribution & Updates</h2>
+        <p>
+            This methodology is versioned. Changes require public notice and validator consensus.
+        </p>
+        <p>
+            Current version: <strong>1.0</strong> — Adopted [DATE]
+        </p>
+    </section>
+
+    <p class="closing">
+        Every wound becomes debt.<br>
+        Every debt awaits repair.<br>
+        The ledger is open.
+    </p>
 </div>
 
 <style>
-    .methodology-card ol {
-        padding-left: 2.5em !important;
-        margin-left: 0 !important;
+    .methodology-card {
+        max-width: 900px;
+        margin: 0 auto;
     }
-    .methodology-card ol li {
-        margin-bottom: 0.8em;
+    .methodology-card ol, .methodology-card ul {
+        padding-left: 2em;
+        margin: 1em 0;
+    }
+    .methodology-card ol li, .methodology-card ul li {
+        margin-bottom: 0.5em;
+    }
+    .methodology-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em 0;
+    }
+    .methodology-table th, .methodology-table td {
+        border: 1px solid var(--border);
+        padding: 0.75em;
+        text-align: left;
+    }
+    .methodology-table th {
+        background: var(--bg-secondary);
+        font-weight: 600;
+    }
+    .methodology-card h3 {
+        margin-top: 1.5em;
+    }
+    .methodology-card h4 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        color: var(--text-secondary);
+    }
+    code {
+        background: var(--bg-secondary);
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+    .closing {
+        margin-top: 2em;
+        padding-top: 1em;
+        border-top: 1px solid var(--border);
+        font-style: italic;
+        text-align: center;
     }
 </style>
 {% endblock %}
