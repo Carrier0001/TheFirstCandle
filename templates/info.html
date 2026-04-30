@@ -1,237 +1,45 @@
-{% extends "base.html" %}
-
-{% block title %}About the Ledger{% endblock %}
-
-{% block content %}
-<div class="container info-card">
-    <h1>What Is This Ledger?</h1>
-    <p>
-        This is a <strong>permanent, public accountability system</strong> for measuring harm and repair.
-        It tracks two things:
-    </p>
-    <ul>
-        <li><strong>Harm</strong> — preventable loss of human life and ecosystem function caused by institutional action or inaction</li>
-        <li><strong>Interference</strong> — attacks on the ledger itself (censorship, DDoS, legal threats)</li>
-    </ul>
-    <p>
-        Neither is erased. Both become permanent debt — until publicly repaired.
-    </p>
-</div>
-
-<div class="container info-card">
-    <h2>Why Life-Years (LY) and Ecosystem-Years (ECY)?</h2>
-    
-    <h3>LY — Life-Years</h3>
-    <p>
-        A Life-Year is one year of human life. When an institution causes a preventable death, 
-        the ledger records the <strong>years of life that would have been lived</strong>.
-    </p>
-    <p>
-        <strong>Example:</strong> A 25-year-old killed where life expectancy is 73 years → <strong>−48 LY</strong>
-    </p>
-    <p>
-        Why not just count deaths? Because killing a child is not the same as killing an elder. 
-        LY captures <strong>stolen future</strong> — not just the fact of death.
-    </p>
-
-    <h3>ECY — Ecosystem-Capacity-Years</h3>
-    <p>
-        An Ecosystem-Year is one year of functional ecosystem service — carbon sequestration, 
-        biodiversity support, regeneration capacity, or pollution absorption.
-    </p>
-    <p>
-        <strong>Example:</strong> 1,000 tons of CO₂e with 100 years atmospheric persistence → <strong>−100,000 ECY</strong>
-    </p>
-    <p>
-        ECY answers: How many years of a healthy planet were stolen?
-    </p>
-</div>
-
-<div class="container info-card">
-    <h2>How Intent Changes Everything</h2>
-    <p>
-        The same harm is weighted differently depending on <strong>how</strong> it happened:
-    </p>
-    
-    <table class="info-table">
-        <thead>
-            <tr><th>Type</th><th>Multiplier</th><th>What It Means</th></tr>
-        </thead>
-        <tbody>
-            <tr><td><strong>Negligence</strong></td><td>1×</td><td>Failed to prevent something foreseeable. Negligence is still harm — but not compounded by intent.</td></tr>
-            <tr><td><strong>Recklessness</strong></td><td>2×</td><td>Knew the risk, did it anyway. Worse than negligence because warning signs were ignored.</td></tr>
-            <tr><td><strong>Deliberate</strong></td><td>5×</td><td>Intended the harm. Policy designed to hurt, an order to shoot, a decision to destroy.</td></tr>
-            <tr><td><strong>Systemic</strong></td><td>8×</td><td>Built into the structure — not one decision, but an entire system producing harm automatically.</td></tr>
-            <tr><td><strong>Cover‑up</strong></td><td>10×</td><td>Committed harm, then concealed it. The cover-up is treated as worse than the original harm.</td></tr>
-        </tbody>
-    </table>
-    
-    <p>
-        <strong>Example:</strong> A death worth −48 LY:
-    </p>
-    <ul>
-        <li>If NEGLIGENCE (1×) → −48 LY on the ledger</li>
-        <li>If DELIBERATE (5×) → −240 LY on the ledger</li>
-        <li>If COVER_UP (10×) → −480 LY on the ledger</li>
-    </ul>
-    <p>
-        Intent multiplies impact. The ledger does not forget <em>how</em> the harm happened.
-    </p>
-</div>
-
-<div class="container info-card">
-    <h2>Surplus — The Only Way Out</h2>
-    <p>
-        Debt is permanent — unless repaired. <strong>Surplus</strong> is the ledger's name for verifiable public repair:
-    </p>
-    <ul>
-        <li>A policy change that saves future lives</li>
-        <li>A diplomatic agreement that reduces conflict</li>
-        <li>Environmental restoration or carbon removal</li>
-        <li>Public acknowledgment and restitution</li>
-    </ul>
-    <p>
-        Surplus is <strong>positive</strong>. It adds to your balance, reducing (but never erasing) the debt.
-    </p>
-    <p>
-        <strong>Example from the ledger:</strong> Netanyahu's Gaza campaign recorded as −68,000,000 LY (after multiplier). 
-        The Abraham Accords added +5,800,000 LY as surplus. Outstanding debt: −62,200,000 LY.
-    </p>
-    <p>
-        Not repaired. Still accruing. The debt remains until further surplus is verified.
-    </p>
-</div>
-
-<div class="container info-card">
-    <h2>Entity States — Where Is an Entity on Its Journey?</h2>
-    
-    <table class="info-table">
-        <thead>
-            <tr><th>State</th><th>Meaning</th><th>Example</th></tr>
-        </thead>
-        <tbody>
-            <tr><td><strong>ACCRUING</strong></td><td>Outstanding debt, no repair activity</td><td>An entity causing harm without acknowledgment or change</td></tr>
-            <tr><td><strong>STABILIZED</strong></td><td>Outstanding debt remains, but some repair has begun</td><td>Policy reformed, but past harm not yet offset</td></tr>
-            <tr><td><strong>REPAIRED</strong></td><td>Debt fully offset by surplus (balance ≥ 0)</td><td>All recorded harm matched or exceeded by verifiable repair</td></tr>
-            <tr><td><strong>PENDING_VALIDATION</strong></td><td>Awaiting review before becoming active</td><td>New entity or recently disputed entry</td></tr>
-        </tbody>
-    </table>
-</div>
-
-<div class="container info-card">
-    <h2>What About Attacks on the Ledger?</h2>
-    <p>
-        The ledger also tracks <strong>interference</strong> — attempts to silence, obstruct, or destroy it:
-    </p>
-    <ul>
-        <li><strong>DDoS attacks</strong>, domain seizure, hosting takedowns</li>
-        <li><strong>Legal threats</strong>, lawsuits, regulatory action</li>
-        <li><strong>Intimidation</strong> of validators, witnesses, or stewards</li>
-        <li><strong>Disinformation campaigns</strong> aimed at delegitimizing the ledger</li>
-    </ul>
-    <p>
-        Interference is quantified with its own multipliers (0.05× to 2.0×). 
-        Multi-vector attacks (using multiple categories within 30 days) escalate the debt.
-    </p>
-    <p>
-        <strong>Streisand effect premium (+50%):</strong> If interference becomes widely reported and increases attention to the ledger, the multiplier increases.
-    </p>
-    <p>
-        The ledger is designed so that <strong>every attack strengthens it</strong> — each obstruction is recorded as permanent testimony.
-    </p>
-</div>
-
-<div class="container info-card">
-    <h2>What This Ledger Does NOT Do</h2>
-    <ul>
-        <li><strong>Does not determine guilt</strong> — criminal or legal guilt is for courts, not this ledger</li>
-        <li><strong>Does not assign moral condemnation</strong> — it measures impact, not evil</li>
-        <li><strong>Does not claim completeness</strong> — absence of records = absence of verification, not absence of harm</li>
-        <li><strong>Does not erase</strong> — even repaired debt remains visible as historical record</li>
-    </ul>
-</div>
-
-<div class="container info-card">
-    <h2>How to Read an Entity Page</h2>
-    <p>
-        When you view an entity (like "Benjamin Netanyahu"), you'll see:
-    </p>
-    <ul>
-        <li><strong>Lifetime Ledger</strong> — total harm, surplus, and outstanding debt across all years</li>
-        <li><strong>Current Year</strong> — activity in the most recent year (if entity is ACTIVE)</li>
-        <li><strong>Harm Breakdown</strong> — how much debt comes from NEGLIGENCE vs DELIBERATE vs COVER_UP, etc.</li>
-        <li><strong>Status</strong> — ACCRUING, STABILIZED, or REPAIRED</li>
-    </ul>
-    <p>
-        Negative numbers = debt owed. Positive numbers = repair credited.
-    </p>
-    <p>
-        <strong>The goal is not to shame. It is to record — and to make repair possible.</strong>
-    </p>
-</div>
-
-<div class="container info-card closing-card">
-    <h2>The Only Way Out Is Through</h2>
-    <p>
-        Debt does not decay. It does not disappear with time, elections, or corporate restructuring.
-    </p>
-    <p>
-        The only path to a REPAIRED status is <strong>public, verifiable repair</strong> — policy change, restitution, environmental restoration, or accountability mechanisms that match the scale of harm caused.
-    </p>
-    <p>
-        Every wound becomes debt.<br>
-        Every debt awaits repair.<br>
-        The ledger is open.
-    </p>
-</div>
-
 <style>
+    /* Light / Dark aware — respects system preference */
     .info-card {
         max-width: 800px;
         margin: 2rem auto;
         padding: 1.5rem 2rem;
-        background: var(--bg-card, #ffffff);
+        background: var(--bg-surface, #ffffff);
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .info-card h1, .info-card h2 {
-        margin-top: 0;
         color: var(--text-primary, #1a1a2e);
     }
-    .info-card h3 {
-        margin-top: 1.5rem;
-        margin-bottom: 0.5rem;
-        font-size: 1.2rem;
-    }
-    .info-card ul, .info-card p {
-        margin: 1rem 0;
-        line-height: 1.6;
-    }
-    .info-card li {
-        margin-bottom: 0.5rem;
-    }
-    .info-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-    }
-    .info-table th, .info-table td {
-        border: 1px solid var(--border, #ddd);
-        padding: 0.75rem;
-        text-align: left;
-        vertical-align: top;
-    }
-    .info-table th {
-        background: var(--bg-secondary, #f5f5f5);
-        font-weight: 600;
-    }
-    .closing-card {
-        text-align: center;
-        background: var(--bg-secondary, #f9f9f9);
-        border-left: 4px solid #d4af37;
-    }
-    strong {
-        color: var(--text-strong, #16213e);
+    @media (prefers-color-scheme: dark) {
+        .info-card {
+            background: #1e1e2e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: #e0e0e0;
+        }
+        .info-card h1, .info-card h2 {
+            color: #ffffff;
+            border-bottom-color: #444;
+        }
+        .info-card h3 {
+            color: #cccccc;
+        }
+        .info-table {
+            background: #1e1e2e;
+        }
+        .info-table th, .info-table td {
+            border-color: #444;
+        }
+        .info-table th {
+            background: #2a2a3a;
+            color: #ffffff;
+        }
+        .info-table td {
+            color: #e0e0e0;
+        }
+        .closing-card {
+            background: #2a2a3a;
+        }
+        .info-card strong {
+            color: #ffffff;
+        }
     }
 </style>
-{% endblock %}
