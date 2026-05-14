@@ -1,6 +1,4 @@
-﻿# PRODUCTION DOCKER COMPOSE
-# Security-hardened configuration
-version: '3.8'
+﻿version: '3.9'
 
 services:
   postgres:
@@ -14,11 +12,8 @@ services:
       - db_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql:ro
       - ./backups:/backups
-    # DO NOT EXPOSE PORT IN PRODUCTION
-    # ports:
-    #   - "5432:5432"
     networks:
       - vow_internal
     healthcheck:
@@ -26,19 +21,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 256M
+      start_period: 15s
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    read_only: true
+    # read_only must be false for Postgres
+    read_only: false
     tmpfs:
       - /tmp
       - /var/run/postgresql
@@ -49,14 +37,15 @@ services:
       dockerfile: Dockerfile.production
     container_name: vow_api
     ports:
-      - "127.0.0.1:8000:8000"  # Only localhost access (behind reverse proxy)
+      - "127.0.0.1:8000:8000"   # Only accessible via nginx
     environment:
-      DATABASE_URL: postgresql://vow@postgres:5432/vow?password_file=/run/secrets/db_password
+      DATABASE_URL: postgresql://vow@postgres:5432/vow
       JWT_SECRET_FILE: /run/secrets/jwt_secret
       PHONE_SALT_FILE: /run/secrets/phone_salt
       IP_SALT_FILE: /run/secrets/ip_salt
       ENVIRONMENT: production
       PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
     secrets:
       - db_password
       - jwt_secret
@@ -77,14 +66,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '1'
-          memory: 512M
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -92,18 +73,24 @@ services:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
-  # Automated backups
   backup:
     image: postgres:15-alpine
     container_name: vow_backup
+    secrets:
+      - db_password
     environment:
-      PGPASSWORD_FILE: /run/secrets/db_password
       PGHOST: postgres
       PGUSER: vow
       PGDATABASE: vow
-    secrets:
-      - db_password
     volumes:
       - ./backups:/backups
       - postgres_data:/var/lib/postgresql/data:ro
@@ -111,14 +98,14 @@ services:
       - vow_internal
     command: >
       sh -c "while true; do
-        sleep 86400;
-        pg_dump -Fc > /backups/vow_$$(date +%Y%m%d_%H%M%S).dump;
+        echo '[Backup] Starting at $$(date)';
+        PGPASSWORD=$$(cat /run/secrets/db_password) pg_dump -U vow -Fc -d vow > /backups/vow_$$(date +%Y%m%d_%H%M%S).dump;
         find /backups -name '*.dump' -mtime +7 -delete;
-        echo 'Backup completed at $$(date)';
+        echo '[Backup] Completed at $$(date)';
+        sleep 86400;
       done"
     restart: unless-stopped
 
-  # Nginx reverse proxy with rate limiting
   nginx:
     image: nginx:alpine
     container_name: vow_nginx
@@ -150,15 +137,10 @@ secrets:
 
 volumes:
   postgres_data:
-    driver: local
   evidence_storage:
-    driver: local
   nginx_cache:
-    driver: local
 
 networks:
   vow_internal:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
+    internal: true
