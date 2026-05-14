@@ -1,9 +1,37 @@
+# Core Framework
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 gunicorn==21.2.0
+
+# Database
 asyncpg==0.30.0
+
+# Data validation & settings
 pydantic==2.9.2
 pydantic-settings==2.5.0
+
+# Security & Auth
 PyJWT==2.9.0
+
+# File uploads
 python-multipart==0.0.12
+
+# Templating
 jinja2==3.1.4
+
+# ====================== PRODUCTION & SECURITY ======================
+
+# Rate Limiting (HIGH PRIORITY)
+slowapi==0.1.9
+
+# Error tracking & monitoring
+sentry-sdk[fastapi]==2.8.0
+
+# Better structured logging (recommended)
+structlog==24.4.0
+
+# Future: Evidence storage (S3/R2 compatible)
+boto3==1.35.0
+
+# Optional but useful
+httpx==0.27.0
