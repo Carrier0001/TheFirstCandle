@@ -1,31 +1,42 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: vow_postgres
     environment:
       POSTGRES_DB: vow
       POSTGRES_USER: vow
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql
-    ports:
-      - "5432:5432"
+      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    # ⚠️ IMPORTANT: Database port is HIDDEN for security
+    # ports:
+    #   - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U vow"]
       interval: 10s
       timeout: 5s
       retries: 5
+    secrets:
+      - db_password
+    restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.production   # Use the secure one we made
+    container_name: vow_api
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://vow:${DB_PASSWORD:-changeme123}@postgres:5432/vow
-      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-change-in-prod}
-      PHONE_SALT: ${PHONE_SALT:-phone-salt-change-in-prod}
-      IP_SALT: ${IP_SALT:-ip-salt-change-in-prod}
+      DATABASE_URL: postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
+      JWT_SECRET: ${JWT_SECRET}
+      PHONE_SALT: ${PHONE_SALT}
+      IP_SALT: ${IP_SALT}
       ENVIRONMENT: development
+      PYTHONUNBUFFERED: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,6 +45,20 @@ services:
       - ./templates:/app/templates
       - ./static:/app/static
     restart: unless-stopped
+    # Security: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
 volumes:
   postgres_data:
+
+# ====================== SECRETS ======================
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
