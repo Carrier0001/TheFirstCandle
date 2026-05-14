@@ -1,247 +1,197 @@
 {% extends "base.html" %}
-{% block title %}{{ entity.entity_name }} | The Vow Ledger{% endblock %}
- 
+{% block title %}{{ entity.entity_name }} — The Vow Ledger{% endblock %}
 {% block content %}
-<div style="max-width: 1100px; margin: 0 auto; padding: 1rem;">
-  <h2 style="color:#fff; text-shadow:0 0 10px #0f0; font-size:3rem; text-align:center; margin:2rem 0;">
-    {{ entity.entity_name }}
-  </h2>
-  <p style="text-align:center; color:#aaa; font-size:1.2rem; margin-bottom:3rem;">
-    Measured as of {{ entity.measurement_date }} • Entity Status: <strong>{{ entity.entity_state }}</strong>
-  </p>
+<div class="entity-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem;">
  
-  <!-- Current Year Balance – only shown if annual data exists -->
-  {% if entity.annual %}
-  <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
-    <h3 style="font-size:1.8rem; margin-bottom:1.2rem; color:#0f0; text-shadow:0 0 6px #0f0;">
-      Current Year Balance ({{ entity.annual.year }})
-    </h3>
-    <div class="grid-2" style="gap:2rem;">
-      <div style="line-height:2.2;">
-        <p class="harm" style="font-size:1.3rem;">Amplified Harm (LY): <strong>{{ "%.2f"|format(entity.annual.harm_ly / 1000000) }} million</strong></p>
-        <p class="surplus" style="font-size:1.3rem;">Surplus Generated (LY): <strong>{{ "%.2f"|format(entity.annual.surplus_ly / 1000000) }} million</strong></p>
-      </div>
-      <div style="line-height:2.2;">
-        <p class="{% if entity.annual.outstanding_ly >= 0 %}surplus{% else %}harm{% endif %}" style="font-size:2rem; font-weight:bold;">
-          Net Change This Year: {{ "%.2f"|format(entity.annual.outstanding_ly / 1000000) }} million LY
-        </p>
-        <p class="neutral" style="font-size:1.4rem;">Current Year Status: <strong style="color:#ff0;">{{ entity.annual.status.value }}</strong></p>
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <!-- Ancient/Eternal entity – no annual view available -->
-  <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem; text-align:center;">
-    <p style="color:#aaa; font-size:1.2rem;">
-      ⚠ This entity predates reliable annual measurement.<br>
-      <span style="color:#888; font-size:1rem;">Lifetime totals are shown below. Annual view is not available for ancient or eternal entities.</span>
+  <!-- ENTITY HEADER -->
+  <section class="entity-header" style="text-align: center; margin-bottom: 3rem;">
+    <h2 class="entity-title" style="color: var(--accent); font-size: 3.2rem; text-shadow: 0 0 15px rgba(227, 176, 75, 0.3); margin-bottom: 1rem;">
+      {{ entity.entity_name }}
+    </h2>
+    <p style="color: var(--subtle); font-size: 1.3rem;">
+      Measured as of {{ entity.measurement_date }} •
+      Status:
+      <span style="color: var(--warn); font-weight: bold;">
+        {{ entity.entity_state }}
+      </span>
+      • Total Entries: {{ entity.entries|length }}
     </p>
-  </div>
-  {% endif %}
- 
-  <!-- Lifetime Moral Balance -->
-  <div class="balance-card" style="margin-bottom:2.5rem; padding:2.5rem; text-align:center;">
-    <h3 style="font-size:2rem; margin-bottom:2rem; color:#0f0; text-shadow:0 0 8px #0f0;">
-      Lifetime Moral Balance
-    </h3>
- 
-    <div style="margin:2rem 0;">
-      <p style="font-size:1.4rem; color:#aaa;">Total Outstanding Moral Debt</p>
-      <p class="harm" style="font-size:3.5rem; font-weight:bold; margin:0.5rem 0;">
-        {{ "%.2f"|format(entity.lifetime.outstanding_ly / 1000000) }} million Life-Years
+    {% if entity.aggregated_entries|length > 0 %}
+      <p style="color: var(--accent-soft); font-size: 1.2rem; margin-top: 1rem; text-shadow: 0 0 8px rgba(227, 176, 75, 0.2);">
+        ⚡ Contains {{ entity.aggregated_entries|length }} Systemic Pattern{{ "s" if entity.aggregated_entries|length != 1 else "" }}
       </p>
-      <p style="font-size:1.2rem; color:#888;">({{ "%.2f"|format(entity.lifetime.outstanding_ecy / 1000000) }} million ECY)</p>
-    </div>
- 
-    <div class="grid-2" style="gap:3rem; margin-top:3rem;">
-      <div style="line-height:2.2;">
-        <p class="harm" style="font-size:1.3rem;">Total Amplified Harm (LY): <strong>{{ "%.2f"|format(entity.lifetime.harm_ly / 1000000) }} million</strong></p>
-        <p class="harm">Total Amplified Harm (ECY): <strong>{{ "%.2f"|format(entity.lifetime.harm_ecy / 1000000) }} million</strong></p>
-      </div>
-      <div style="line-height:2.2;">
-        <p class="surplus" style="font-size:1.3rem;">Total Surplus Credited (LY): <strong>{{ "%.2f"|format(entity.lifetime.surplus_ly / 1000000) }} million</strong></p>
-        <p class="surplus">Total Surplus Credited (ECY): <strong>{{ "%.2f"|format(entity.lifetime.surplus_ecy / 1000000) }} million</strong></p>
-      </div>
-    </div>
- 
-    <div style="margin-top:3rem;">
-      <p class="neutral" style="font-size:1.4rem;">Lifetime Status: <strong style="color:#ff0; font-size:1.8rem;">{{ entity.lifetime.status.value }}</strong></p>
-      {% if entity.lifetime.years_to_repair %}
-        <p class="neutral" style="font-size:1.4rem; margin-top:1rem;">
-          Estimated Time to Full Repair<br>
-          <strong style="color:#0f8; font-size:2rem;">{{ "%.0f"|format(entity.lifetime.years_to_repair) }} years</strong>
-        </p>
+    {% endif %}
+  </section>
+
+  <!-- LIFETIME MORAL DEBT -->
+  <section class="balance-card" style="background: var(--bg); border-left: 8px solid var(--error); padding: 2.5rem; text-align: center; margin-bottom: 3rem;">
+    <h3 style="color: var(--error); font-size: 2rem; margin-bottom: 1.5rem;">Outstanding Moral Debt</h3>
+    {% set total_harm = entity.entries|map(attribute="harm_ly")|sum %}
+    {% set total_ecy = entity.entries|map(attribute="harm_ecy")|sum %}
+    <div style="font-size: 4rem; font-weight: bold; color: var(--error); text-shadow: 0 0 20px rgba(201, 75, 75, 0.3);">
+      {% if total_harm|abs >= 1000000 %}
+        {{ "%.2f"|format(total_harm|abs / 1000000) }} million
+      {% elif total_harm|abs >= 1000 %}
+        {{ "%.1f"|format(total_harm|abs / 1000) }} thousand
       {% else %}
-        <p class="harm" style="font-size:1.4rem; margin-top:1rem;">Cannot repair at current rate</p>
-      {% endif %}
+        {{ total_harm|abs|int|comma_format }}
+      {% endif %} LY
     </div>
-  </div>
- 
-  <!-- Moral Debt Trajectory -->
-  <div class="balance-card" style="margin-bottom:2.5rem; padding:2rem;">
-    <h3 style="font-size:1.6rem; margin-bottom:1rem;">Moral Debt Trajectory Over Time</h3>
-    <p style="color:#aaa; font-size:1rem; margin-bottom:1.5rem;">
-      Cumulative outstanding Life-Years – like a stock chart (lower = deeper debt; rising = repair)
+    <p style="color: var(--fg); font-size: 1.4rem; margin: 1rem 0;">
+      Equivalent Carbon Years: {{ total_ecy|abs|int|comma_format }} ECY
     </p>
-    <div style="height:400px; background:#0a0a0a; border:1px solid #0f0; border-radius:8px; padding:1rem; box-shadow:0 0 20px rgba(0,255,0,0.4);">
-      <canvas id="trajectoryChart"></canvas>
-    </div>
-  </div>
- 
-  <!-- Harm Breakdown Bar Chart -->
-  {% if entity.harm_breakdown %}
-  <div class="balance-card" style="margin-bottom:2.5rem; padding:1.8rem;">
-    <h3 style="font-size:1.6rem; margin-bottom:1rem;">Harm Breakdown by Intent Type</h3>
-    <div style="height:220px; background:#111; border:1px solid #0f0; border-radius:8px; padding:0.8rem; box-shadow:0 0 10px rgba(0,255,0,0.3); margin-bottom:1.5rem;">
-      <canvas id="harmChart"></canvas>
-    </div>
- 
-    <ul style="list-style:square inside; font-size:1.1rem; line-height:2;">
-      {% for harm_type, data in entity.harm_breakdown.items() %}
-        <li style="margin:0.8rem 0;">
-          <strong>{{ harm_type }}</strong> ({{ data.count }} entries):
-          <span class="harm"><strong>{{ "%.2f"|format(data.ly / 1000000) }}M LY</strong></span>
-          {% if data.ecy != 0 %}
-            | <span class="harm">{{ "%.2f"|format(data.ecy / 1000000) }}M ECY</span>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
- 
-  <!-- Detailed Ledger Entries -->
-  <h3 style="color:#fff; text-shadow:0 0 8px #0f0; font-size:2.2rem; margin:4rem 0 2rem; text-align:center;">Detailed Ledger Entries</h3>
-  {% for harm_type, group in entries_by_type.items() %}
-    <div class="balance-card" style="margin-bottom:2rem; padding:2rem;">
-      <h4 style="color:#33ff33; font-size:1.6rem; margin-bottom:1.2rem;">
-        {{ harm_type }} ({{ group|length }} entries)
-      </h4>
-      <ul style="list-style:disc inside; line-height:2; font-size:1.1rem;">
-        {% for entry in group|sort(attribute='year') %}
-          <li style="margin:1rem 0;">
-            <strong>{{ entry.year }}</strong> –
-            {{ entry.description }}
-            <br>
-            <span style="color:#888; font-size:1rem;">
-              ({{ "%.1f"|format(entry.harm_ly / 1000) }}K LY base
-              {% if entry.surplus_ly > 0 %}
-                → +{{ "%.1f"|format(entry.surplus_ly / 1000) }}K surplus
-              {% endif %})
-            </span>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endfor %}
- 
-</div>
- 
-<p style="text-align:center; margin:5rem 0;">
-  <a href="/" style="color:#33ff33; font-size:1.4rem; text-decoration:none;">← Back to Ledger Index</a>
-</p>
- 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  // === Moral Debt Trajectory – Stock Market Style ===
-  const entries = [
-    {% for entry in entity.entries %}
-      { year: {{ entry.year }}, amplified_net: {{ entry.harm_ly + entry.surplus_ly }} },
+    <p style="color: var(--subtle); font-style: italic; margin-top: 2rem;">
+      This debt remains unresolved. It grows until repair begins.
+    </p>
+  </section>
+
+  <!-- SYSTEMIC HARM PATTERNS -->
+  {% if entity.aggregated_entries %}
+  <section class="balance-card systemic" style="border-left: 8px solid var(--warn); margin-bottom: 3rem;">
+    <h3 style="color: var(--warn); font-size: 2.2rem; margin-bottom: 1.5rem;">
+      Systemic Harm Patterns ({{ entity.aggregated_entries|length }})
+    </h3>
+    <p style="color: var(--subtle); margin-bottom: 2rem;">
+      Repeated testimony has converged into recognized patterns of institutional harm.
+    </p>
+    {% for agg in entity.aggregated_entries|sort(attribute="harm_ly") %}
+      <div style="background: #211a14; padding: 1.8rem; margin-bottom: 1.5rem; border-radius: 10px; border-left: 5px solid var(--warn);">
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: start;">
+          <div>
+            <h4 style="color: var(--warn); margin: 0 0 0.5rem;">
+              <a href="/systemic/{{ entity.entity_id }}/{{ agg.systemic_key }}" style="color: var(--warn); text-decoration: none;">
+                {{ agg.description|default("Unnamed Systemic Pattern") }}
+              </a>
+            </h4>
+            <p style="color: var(--subtle); margin: 0.5rem 0;">
+              {{ agg.individual_entries|length }} testimonies •
+              {{ agg.num_affected|comma_format }} affected
+            </p>
+            <p style="color: var(--error); font-size: 1.3rem; font-weight: bold; margin-top: 0.5rem;">
+              {{ agg.harm_ly|abs|comma_format }} Life-Years Lost
+            </p>
+            <p style="color: var(--accent-soft);">
+              Confidence: <strong>{{ agg.confidence }}</strong>
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <a href="/systemic/{{ entity.entity_id }}/{{ agg.systemic_key }}"
+               style="display: inline-block; padding: 1rem 1.8rem; background: var(--warn); color: #1a1410;
+                      font-weight: bold; border-radius: 8px; text-decoration: none;">
+              View Full Pattern →
+            </a>
+          </div>
+        </div>
+      </div>
     {% endfor %}
-  ];
- 
-  const yearMap = {};
-  entries.forEach(e => {
-    if (!yearMap[e.year]) yearMap[e.year] = 0;
-    yearMap[e.year] += e.amplified_net;
-  });
- 
-  const years = Object.keys(yearMap).sort((a,b) => a - b);
-  const dataPoints = [];
-  let running = 0;
-  years.forEach(y => {
-    running += yearMap[y];
-    dataPoints.push({ x: parseInt(y), y: running / 1000000 });
-  });
- 
-  const ctx = document.getElementById('trajectoryChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: 'Moral Debt',
-        data: dataPoints,
-        borderColor: '#00ff41',
-        backgroundColor: 'rgba(0, 255, 65, 0.1)',
-        borderWidth: 4,
-        pointBackgroundColor: '#00ff41',
-        pointBorderColor: '#000',
-        pointBorderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 10,
-        tension: 0.1,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          type: 'linear',
-          title: { display: true, text: 'Year', color: '#00ff41', font: { size: 16 } },
-          ticks: { color: '#00ff41', font: { size: 14 } },
-          grid: { color: 'rgba(0, 255, 65, 0.2)' }
-        },
-        y: {
-          title: { display: true, text: 'Million Life-Years Outstanding', color: '#ff4444', font: { size: 16 } },
-          ticks: { color: '#00ff41', font: { size: 14 } },
-          grid: { color: 'rgba(0, 255, 65, 0.2)' }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Moral Debt Trajectory', color: '#00ff41', font: { size: 20 } }
-      }
-    }
-  });
- 
-  // === Harm Breakdown Bar Chart ===
-  {% if entity.harm_breakdown %}
-  const harmCtx = document.getElementById('harmChart').getContext('2d');
-  const harmData = {
-    labels: [{% for harm_type in entity.harm_breakdown.keys() %}'{{ harm_type }}', {% endfor %}],
-    datasets: [{
-      label: 'Amplified Harm',
-      data: [{% for data in entity.harm_breakdown.values() %}{{ data.ly / 1000000 }}, {% endfor %}],
-      backgroundColor: 'rgba(255, 68, 68, 0.9)',
-      borderColor: '#0f0',
-      borderWidth: 2
-    }]
-  };
- 
-  new Chart(harmCtx, {
-    type: 'bar',
-    data: harmData,
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { title: { display: true, text: 'Million Life-Years Lost ↑', color: '#ff4444' }, ticks: { color: '#aaa' }, grid: { color: 'rgba(0,255,0,0.1)' } },
-        y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(0,255,0,0.1)' } }
-      },
-      plugins: { legend: { display: false }, title: { display: true, text: 'Scale of Institutional Harm', color: '#0f0', font: { size: 15 } } }
-    }
-  });
+  </section>
   {% endif %}
-</script>
- 
+
+  <!-- INDIVIDUAL ENTRIES -->
+  <section class="balance-card" style="margin-bottom: 3rem;">
+    <h3 style="color: var(--accent); font-size: 2rem; margin-bottom: 1.5rem;">
+      Individual Testimonies ({{ entity.entries|length }})
+    </h3>
+    <div style="display: grid; gap: 1rem;">
+      {% for entry in entity.entries|sort(attribute="year", reverse=True) %}
+        <div style="background: #211a14; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--accent);">
+          <a href="/entity/{{ entity.entity_id }}/entry/{{ entry.entry_id }}" style="text-decoration: none; color: inherit; display: block;">
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start;">
+              <div style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: bold; color: var(--accent);">
+                  {{ entry.year }}
+                </div>
+                {% if entry.year < 0 %}
+                  <div style="color: var(--subtle); font-size: 0.9rem;">{{ -entry.year }} BCE</div>
+                {% endif %}
+              </div>
+              <div>
+                <p style="color: var(--fg); line-height: 1.7; margin-bottom: 1rem; white-space: pre-wrap;">
+                  {{ entry.description }}
+                </p>
+                <div style="font-size: 0.95rem; color: var(--subtle);">
+                  <strong>Harm:</strong> {{ entry.harm_ly|abs|comma_format }} LY •
+                  <strong>Intent:</strong> {{ entry.intent_type|default("NEGLIGENCE") }} •
+                  <strong>Confidence:</strong> {{ entry.confidence }}
+                  {% if entry.evidence_hashes|length > 0 %}
+                    • <strong>Evidence:</strong> {{ entry.evidence_hashes|length }} item{{ "s" if entry.evidence_hashes|length != 1 else "" }}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+    {% if entity.entries|length == 0 %}
+      <p style="text-align: center; color: var(--subtle); font-style: italic; padding: 3rem;">
+        No testimony recorded yet.<br><br>
+        The ledger awaits the first truth.
+      </p>
+    {% endif %}
+  </section>
+
+  <!-- CALL TO TESTIMONY -->
+  <section style="text-align: center; padding: 3rem; background: var(--bg); border: 2px dashed var(--accent); border-radius: 12px; margin-bottom: 3rem;">
+    <p style="font-size: 1.5rem; color: var(--fg); margin-bottom: 1.5rem;">
+      Do you have testimony about {{ entity.entity_name }}?
+    </p>
+    <a href="/submit?prefill_entity={{ entity.entity_id }}"
+       style="display: inline-block; padding: 1.5rem 3rem; background: var(--accent); color: #1a1410;
+              font-size: 1.3rem; font-weight: bold; border-radius: 10px; text-decoration: none;
+              box-shadow: 0 0 30px rgba(227, 176, 75, 0.3);">
+      Submit Testimony →<br>
+      <small style="font-weight: normal;">Anonymous option available</small>
+    </a>
+  </section>
+
+  <!-- BACK -->
+  <p style="text-align: center; margin: 4rem 0;">
+    <a href="/" style="color: var(--accent); font-size: 1.4rem; text-decoration: none;">
+      ← Return to the Public Ledger
+    </a>
+  </p>
+</div>
+
 <style>
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-  .harm { color: #ff4444; }
-  .surplus { color: #44ff44; }
-  .neutral { color: #cccc00; }
+  .entity-title {
+    letter-spacing: 2px;
+  }
+  .balance-card {
+    background: var(--bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  .balance-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 30px rgba(227, 176, 75, 0.15);
+  }
+  .harm {
+    color: var(--error);
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 800px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .balance-card {
+      padding: 1.5rem;
+    }
+  }
+  @media (max-width: 600px) {
+    h2 {
+      font-size: 2rem;
+    }
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
 </style>
 {% endblock %}

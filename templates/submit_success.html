@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Submission Received — The Vow Ledger{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 4rem auto; text-align: center; padding: 2rem;">
+  <h1 style="color: var(--accent); text-shadow: 0 0 15px rgba(227, 176, 75, 0.4); font-size: 2.8rem; margin-bottom: 1rem;">
+    Testimony Received
+  </h1>
+
+  <div style="background: rgba(227, 176, 75, 0.1); border: 2px solid var(--accent); padding: 2rem; border-radius: 12px; margin: 2rem 0;">
+    <p style="font-size: 1.4rem; color: var(--fg); margin-bottom: 1rem;">
+      Your record of harm against
+    </p>
+    <strong style="font-size: 1.8rem; color: var(--accent);">{{ entity_name }}</strong>
+    <p style="font-size: 1.4rem; color: var(--fg); margin-top: 1rem;">
+      has been submitted to the ledger.
+    </p>
+  </div>
+
+  <p style="color: var(--subtle); font-size: 1.1rem; margin: 2rem 0;">
+    Entry ID: <code style="background:#0f0c09; padding:0.3rem 0.6rem; border-radius:4px; color: var(--accent);">{{ entry_id }}</code><br><br>
+    This testimony is now in review.<br>
+    It will appear publicly only after solemn verification.
+  </p>
+
+  <hr style="border-color: var(--border); margin: 3rem 0;">
+
+  <p style="color: var(--subtle); font-style: italic;">
+    The First Candle carries your light forward.<br>
+    Thank you for bearing witness.
+  </p>
+
+  <div style="margin-top: 3rem;">
+    <a href="/" style="color: var(--accent); font-size: 1.2rem; text-decoration: underline;">← Return to the Ledger</a>
+    <span style="color: var(--border); margin: 0 1rem;">|</span>
+    <a href="/submit" style="color: var(--accent);">Submit Another Report</a>
+  </div>
+</div>
+
+<style>
+  :root {
+    --bg: #1a1410;
+    --fg: #f4efe8;
+    --accent: #e3b04b;
+    --accent-soft: #f2d28b;
+    --border: #5a4634;
+    --subtle: #cbbfae;
+  }
+</style>
+{% endblock %}

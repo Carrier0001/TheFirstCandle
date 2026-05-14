@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Admin — Pending Submissions{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="submit-card">
+    <h1 class="title">Pending Submissions</h1>
+    <p class="subtitle">
+      {{ submissions|length }} record{{ "s" if submissions|length != 1 else "" }} awaiting judgment.<br>
+      <strong>None have been calculated or inscribed into the ledger.</strong>
+    </p>
+
+    {% if submissions|length == 0 %}
+      <div class="notice" style="text-align:center; font-style:italic;">
+        No pending submissions.<br>
+        The ledger awaits the first verified testimony.
+      </div>
+    {% else %}
+      {% for sub in submissions %}
+        <div class="submit-card" style="margin-bottom:1.8rem;">
+          <div style="display:grid; grid-template-columns:1fr auto; gap:1.5rem; align-items:start;">
+            <div>
+              <h3 style="color: var(--accent); margin:0 0 0.5rem 0; font-size:1.5rem;">
+                {{ sub.entity.entity_name|default(sub.entity.entity_id)|title }}
+              </h3>
+              <p style="color: var(--fg); margin:0.3rem 0;">
+                <strong>Entity ID:</strong> <code>{{ sub.entity.entity_id }}</code>
+              </p>
+              <p style="color: var(--fg); margin:0.3rem 0;">
+                <strong>Year:</strong> {{ sub.event.year }}
+                {% if sub.event.year < 0 %} ({{ -sub.event.year }} BCE){% endif %}
+              </p>
+              <div style="margin:0.8rem 0; color: var(--fg); line-height:1.5;">
+                {{ sub.event.description[:250] }}{% if sub.event.description|length > 250 %}…{% endif %}
+              </div>
+              <div style="font-size:0.9rem; color: var(--subtle); margin-top:0.8rem;">
+                <strong>Submitted:</strong> {{ sub.received_at }}<br>
+                <strong>Submission ID:</strong> <code>{{ sub.submission_id }}</code><br>
+                {% if sub.evidence.files|length > 0 %}
+                  <strong>Evidence:</strong> {{ sub.evidence.files|length }} file{{ "s" if sub.evidence.files|length != 1 else "" }}
+                {% endif %}
+                {% if sub.evidence.links|length > 0 %}
+                  {% if sub.evidence.files|length > 0 %} • {% endif %}
+                  {{ sub.evidence.links|length }} external link{{ "s" if sub.evidence.links|length != 1 else "" }}
+                {% endif %}
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; justify-content:center; gap:0.8rem;">
+              <a href="/admin/{{ secret }}/review/{{ sub.filename }}" class="btn-submit" style="text-align:center;">
+                Review & Judge →
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="notice" style="text-align:center; margin-top:2rem; font-style:italic;">
+      This gate is narrow.<br>
+      Only truth — verified, measured, and solemnly acknowledged — may pass.<br>
+      Nothing enters the ledger without human judgment.
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --bg: #1a1410;
+    --fg: #f4efe8;
+    --accent: #e3b04b;
+    --accent-soft: #f2d28b;
+    --border: #5a4634;
+    --subtle: #cbbfae;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .submit-card {
+    background: var(--bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 30px rgba(227, 176, 75, 0.15);
+  }
+
+  .title {
+    text-align: center;
+    color: var(--accent);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 12px rgba(227, 176, 75, 0.3);
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--subtle);
+    font-size: 1.15rem;
+    margin-bottom: 2rem;
+  }
+
+  .notice {
+    background: rgba(227, 176, 75, 0.1);
+    border-left: 5px solid var(--accent);
+    padding: 1.5rem;
+    border-radius: 10px;
+    color: var(--fg);
+  }
+
+  .btn-submit {
+    background: var(--accent);
+    color: #1a1410;
+    padding: 1rem 2.5rem;
+    border-radius: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-submit:hover {
+    background: var(--accent-soft);
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}

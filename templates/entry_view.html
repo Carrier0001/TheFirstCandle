@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.year }} — {{ entry.description[:60] }}{% if entry.description|length > 60 %}...{% endif %} — {{ entity.entity_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem;">
+  <!-- Header -->
+  <h2 style="color: var(--accent); text-shadow: 0 0 12px rgba(227, 176, 75, 0.3); font-size: 2.8rem; text-align: center; margin-bottom: 1rem;">
+    Individual Testimony
+  </h2>
+  <p style="color: var(--subtle); text-align: center; font-size: 1.2rem; margin-bottom: 3rem;">
+    From: <strong style="color: var(--accent);">{{ entity.entity_name }}</strong><br>
+    Year: <strong>{{ entry.year }}</strong>{% if entry.year < 0 %} ({{ -entry.year }} BCE){% endif %}<br>
+    Entry ID: <code style="background: #0f0c09; padding: 0.4rem 0.8rem; border-radius: 4px; color: var(--accent);">
+      {{ entry.entry_id }}
+    </code>
+  </p>
+
+  <!-- Summary Card -->
+  <div class="balance-card" style="background: var(--bg); border-left: 8px solid var(--accent); padding: 2.5rem; margin-bottom: 3rem; text-align: center;">
+    <div class="grid-4" style="margin-bottom: 2rem;">
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Intent Type</p>
+        <p style="font-size: 2rem; color: var(--warn); font-weight: bold;">
+          {{ entry.intent_type }}
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Confidence</p>
+        <p style="font-size: 1.8rem; color: var(--accent); font-weight: bold;">
+          {{ entry.confidence }}
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Life-Years Lost</p>
+        <p class="harm" style="font-size: 2.2rem; font-weight: bold;">
+          {{ entry.harm_ly|abs|comma_format }} LY
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Status</p>
+        <p style="font-size: 1.8rem; color: var(--error); font-weight: bold;">
+          INSCRIBED
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Description -->
+  <div class="balance-card" style="padding: 2rem; margin-bottom: 3rem;">
+    <h3 style="color: var(--accent); margin-bottom: 1rem;">Testimony</h3>
+    <p style="color: var(--fg); white-space: pre-wrap; line-height: 1.8; font-size: 1.1rem;">
+      {{ entry.description }}
+    </p>
+  </div>
+
+<!-- Evidence -->
+  {% if entry.evidence_hashes|length > 0 %}
+  <div class="balance-card" style="padding:2rem; margin-bottom:3rem;">
+    <h3 style="color: var(--accent); margin-bottom:1rem;">Evidence ({{ entry.evidence_hashes|length }})</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:1rem;">
+      {% for ev in entry.evidence_hashes %}
+        <div style="background:#211a14; padding:1rem; border-radius:8px;">
+          <a href="/evidence/{{ entity.entity_id }}/{{ ev.hash }}{{ ev.extension }}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:bold;">
+            {% if ev.extension|lower in ['.jpg', '.jpeg', '.png', '.gif'] %}🖼{% elif ev.extension|lower == '.pdf' %}📄{% elif ev.extension|lower in ['.mp4', '.webm'] %}🎥{% elif ev.extension|lower == '.mp3' %}🔊{% else %}📎{% endif %}
+            {{ ev.original_filename }}
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- External Links -->
+  {% if entry.external_links|length > 0 %}
+  <div class="balance-card" style="padding: 2rem; margin-bottom: 3rem;">
+    <h3 style="color: var(--accent); margin-bottom: 1rem;">External Sources</h3>
+    <ul style="list-style: none; padding-left: 0;">
+      {% for link in entry.external_links %}
+        <li style="margin: 0.8rem 0;">
+          <a href="{{ link }}" target="_blank" style="color: var(--accent);">
+            🔗 {{ link }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Back Link -->
+  <div style="text-align: center; margin: 4rem 0;">
+    <a href="/entity/{{ entity.entity_id }}"
+       style="color: var(--accent); font-size: 1.4rem; text-decoration: none; padding: 1rem 2rem; border: 1px solid var(--border); border-radius: 8px;">
+      ← Return to {{ entity.entity_name }} Ledger
+    </a>
+  </div>
+</div>
+
+<style>
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .grid-4 { grid-template-columns: 1fr; }
+  }
+  .balance-card {
+    background: var(--bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  .neutral { color: var(--subtle); }
+  .harm { color: var(--error); }
+</style>
+{% endblock %}

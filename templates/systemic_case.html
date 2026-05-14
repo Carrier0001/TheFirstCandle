@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}{{ aggregate.description|default("Systemic Harm Pattern") }} — {{ entity.entity_name }}{% endblock %}
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem;">
+ 
+  <!-- Header -->
+  <h2 style="color: var(--accent); text-shadow: 0 0 12px rgba(227, 176, 75, 0.3); font-size: 2.8rem; text-align: center; margin-bottom: 1rem;">
+    Systemic Harm Pattern
+  </h2>
+  <p style="color: var(--subtle); text-align: center; font-size: 1.2rem; margin-bottom: 3rem;">
+    Entity: <strong style="color: var(--accent);">{{ entity.entity_name }}</strong><br>
+    Pattern ID:
+    <code style="background: #0f0c09; padding: 0.4rem 0.8rem; border-radius: 4px; color: var(--accent);">
+      {{ aggregate.systemic_key }}
+    </code>
+  </p>
+
+  <!-- Systemic Summary Card -->
+  <div class="balance-card" style="background: var(--bg); border-left: 8px solid var(--warn); padding: 2.5rem; margin-bottom: 3rem; text-align: center;">
+    <div class="grid-4" style="margin-bottom: 2rem;">
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Individuals Affected</p>
+        <p style="font-size: 3rem; color: var(--fg); font-weight: bold; margin: 0.5rem 0;">
+          {{ aggregate.num_affected|comma_format }}
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Confidence Level</p>
+        <p style="font-size: 2.2rem; color: var(--accent); font-weight: bold;">
+          {{ aggregate.confidence }}
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Total Life-Years Lost</p>
+        <p class="harm" style="font-size: 2.6rem; font-weight: bold;">
+          {% if aggregate.harm_ly|abs >= 1000000 %}
+            {{ "%.2f"|format(aggregate.harm_ly|abs / 1000000) }} million
+          {% elif aggregate.harm_ly|abs >= 1000 %}
+            {{ "%.1f"|format(aggregate.harm_ly|abs / 1000) }} thousand
+          {% else %}
+            {{ aggregate.harm_ly|abs|comma_format }}
+          {% endif %} LY
+        </p>
+      </div>
+      <div>
+        <p class="neutral" style="font-size: 1.1rem;">Status</p>
+        <p style="font-size: 2rem; color: var(--error); font-weight: bold;">
+          UNRESOLVED
+        </p>
+      </div>
+    </div>
+    {% if aggregate.description and aggregate.description != "Aggregate created from submissions" %}
+      <p style="color: var(--fg); font-style: italic; font-size: 1.1rem;">
+        "{{ aggregate.description }}"
+      </p>
+    {% endif %}
+  </div>
+
+  <!-- Call to Testimony -->
+  <div style="background: var(--bg); border: 2px dashed var(--accent); padding: 2rem; text-align: center; margin-bottom: 3rem; border-radius: 12px;">
+    <p style="font-size: 1.4rem; color: var(--fg); margin-bottom: 1.5rem;">
+      Were you or someone you know affected by this pattern of harm?
+    </p>
+    <a href="/submit?prefill_entity={{ entity.entity_id }}&prefill_description={{ aggregate.description|urlencode }}"
+       style="display: inline-block; padding: 1.2rem 2.5rem; background: var(--accent); color: #1a1410;
+              font-weight: bold; font-size: 1.2rem; border-radius: 8px; text-decoration: none;
+              box-shadow: 0 0 20px rgba(227, 176, 75, 0.3); transition: all 0.3s;"
+       onmouseover="this.style.background='var(--accent-soft)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 30px rgba(227, 176, 75, 0.5)';"
+       onmouseout="this.style.background='var(--accent)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 20px rgba(227, 176, 75, 0.3)';">
+      Submit Your Testimony →<br>
+      <small style="font-weight: normal; font-size: 0.9rem;">(Anonymous option available)</small>
+    </a>
+  </div>
+
+  <!-- Individual Testimonies -->
+  <h3 style="color: var(--accent); font-size: 2.2rem; margin-bottom: 1rem;">
+    Individual Testimonies ({{ aggregate.individual_entries|length }})
+  </h3>
+  <p style="color: var(--subtle); margin-bottom: 2rem;">
+    Each entry below represents one person's experience. Full evidence is preserved but protected.
+  </p>
+
+  <!-- Search -->
+  <div style="margin-bottom: 2rem;">
+    <input type="text" id="caseSearch" placeholder="Search by year, description keywords, evidence type..."
+           style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: 8px; border: 1px solid var(--border); background: #0f0c09; color: var(--fg);">
+  </div>
+
+  <!-- Case List -->
+  <div id="caseList">
+    {% for entry_id in aggregate.individual_entries %}
+      {% set case = entity.entries|selectattr("entry_id", "equalto", entry_id)|first %}
+      {% if case %}
+        <details class="balance-card case-item" open="{{ loop.index <= 3 }}"
+                 data-search="{{ case.year }} {{ case.description|lower }} {{ case.confidence|lower }} {{ case.intent_type|lower }}">
+          <summary style="cursor: pointer; padding: 1rem; font-size: 1.3rem; color: var(--fg); background: #211a14;">
+            <strong style="color: var(--accent);">{{ case.year }}</strong>{% if case.year < 0 %} ({{ -case.year }} BCE){% endif %}
+            • {{ case.intent_type }}
+            • <span style="color: var(--warn);">{{ case.confidence }}</span>
+            • Harm: {{ (case.harm_ly|abs)|comma_format }} LY
+          </summary>
+          <div style="padding: 1.5rem; color: var(--fg); line-height: 1.7; white-space: pre-wrap;">
+            {{ case.description }}
+          </div>
+
+          {% if case.evidence_hashes|length > 0 %}
+            <div style="padding: 1.5rem 1.5rem 1rem; background: #211a14; border-radius: 6px; margin: 1rem 1.5rem;">
+              <p style="margin-bottom: 0.8rem; color: var(--subtle);"><strong>Evidence ({{ case.evidence_hashes|length }} item{{ "s" if case.evidence_hashes|length != 1 else "" }}):</strong></p>
+              <ul style="list-style: none; padding-left: 0;">
+                {% for ev in case.evidence_hashes %}
+                  <li style="margin: 0.5rem 0;">
+                    {% set ext = ev.extension|lower %}
+                    {% if ext in ['.jpg', '.jpeg', '.png', '.gif'] %}
+                      <a href="/evidence/{{ entity.entity_id }}/{{ ev.hash }}{{ ev.extension }}" target="_blank" style="color: var(--accent); text-decoration: none;">
+                        🖼 View Image: {{ ev.original_filename }}
+                      </a>
+                    {% elif ext == '.pdf' %}
+                      <a href="/evidence/{{ entity.entity_id }}/{{ ev.hash }}.pdf" target="_blank" style="color: var(--accent); text-decoration: none;">
+                        📄 View PDF: {{ ev.original_filename }}
+                      </a>
+                    {% elif ext in ['.mp4', '.webm'] %}
+                      <a href="/evidence/{{ entity.entity_id }}/{{ ev.hash }}{{ ev.extension }}" target="_blank" style="color: var(--accent); text-decoration: none;">
+                        🎥 View Video: {{ ev.original_filename }}
+                      </a>
+                    {% elif ext == '.mp3' %}
+                      <a href="/evidence/{{ entity.entity_id }}/{{ ev.hash }}.mp3" target="_blank" style="color: var(--accent); text-decoration: none;">
+                        🔊 Listen to Audio: {{ ev.original_filename }}
+                      </a>
+                    {% else %}
+                      <span style="color: var(--subtle);">📎 {{ ev.original_filename }} ({{ ev.extension }})</span>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if case.external_links|length > 0 %}
+            <div style="padding: 1rem 1.5rem; background: #211a14; border-radius: 6px; margin: 1rem 1.5rem;">
+              <p style="margin-bottom: 0.8rem; color: var(--subtle);"><strong>External Sources:</strong></p>
+              <ul style="list-style: none; padding-left: 0;">
+                {% for link in case.external_links %}
+                  <li style="margin: 0.5rem 0;">
+                    <a href="{{ link }}" target="_blank" style="color: var(--accent); text-decoration: none;">
+                      🔗 {{ link }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </details>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Back Link -->
+  <div style="text-align: center; margin: 4rem 0;">
+    <a href="/entity/{{ entity.entity_id }}"
+       style="color: var(--accent); font-size: 1.4rem; text-decoration: none; padding: 1rem 2rem; border: 1px solid var(--border); border-radius: 8px; transition: all 0.3s;"
+       onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(227, 176, 75, 0.1)';"
+       onmouseout="this.style.borderColor='var(--border)'; this.style.background='transparent';">
+      ← Return to {{ entity.entity_name }} Ledger
+    </a>
+  </div>
+</div>
+
+<style>
+  .balance-card {
+    background: var(--bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  .balance-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 30px rgba(227, 176, 75, 0.15);
+  }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+  @media (max-width: 900px) {
+    .grid-4 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .grid-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+  details.case-item {
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  details.case-item[open] summary {
+    border-bottom: 2px solid var(--accent);
+  }
+  details.case-item:hover {
+    border-color: var(--accent);
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::marker {
+    display: none;
+  }
+  summary::before {
+    content: '▶ ';
+    color: var(--accent);
+    margin-right: 0.5rem;
+  }
+  details[open] summary::before {
+    content: '▼ ';
+  }
+  .neutral {
+    color: var(--subtle);
+  }
+  .harm {
+    color: var(--error);
+  }
+</style>
+
+<script>
+  const searchInput = document.getElementById("caseSearch");
+  const cases = document.querySelectorAll(".case-item");
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase();
+    cases.forEach(caseItem => {
+      const searchable = caseItem.dataset.search;
+      caseItem.style.display = searchable.includes(query) ? "block" : "none";
+    });
+  });
+</script>
+{% endblock %}

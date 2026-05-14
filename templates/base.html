@@ -4,117 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}The Vow Ledger{% endblock %}</title>
+    <meta name="description" content="A permanent, irreversible ledger of institutional harm measured in Life-Years (LY) and Equivalent Carbon Years (ECY).">
     <style>
+        :root {
+            --bg: #1a1410;
+            --fg: #f4efe8;
+            --accent: #e3b04b;
+            --accent-soft: #f2d28b;
+            --border: #5a4634;
+            --subtle: #cbbfae;
+            --warn: #d48a3a;
+            --error: #c94b4b;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Courier New', monospace;
-            background: #0f0f0f;
-            color: #f5f5f5;
+            font-family: 'Courier New', Courier, monospace;
+            background: #0f0c09;
+            color: var(--fg);
             line-height: 1.7;
             font-size: 1.05rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
+
+        a { 
+            color: var(--accent); 
+            text-decoration: none; 
+            transition: color 0.3s; 
+        }
+
+        a:hover { 
+            color: var(--accent-soft); 
+            text-shadow: 0 0 8px rgba(227, 176, 75, 0.4); 
+        }
+
+        /* Header */
         header {
-            background: #1a1a1a;
-            border-bottom: 2px solid #333;
-            padding: 1.5rem;
+            background: linear-gradient(to bottom, #1a1410, #0f0c09);
+            border-bottom: 2px solid var(--accent);
+            padding: 2rem 1rem 1.5rem;
             text-align: center;
+            box-shadow: 0 4px 20px rgba(227, 176, 75, 0.1);
         }
-        h1 { 
-            color: #fff; 
-            font-size: 2.2rem; 
-            letter-spacing: 2px; 
-            text-shadow: 0 0 6px #0f0;
+
+        header h1 {
+            color: var(--accent);
+            font-size: 2.8rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 12px rgba(227, 176, 75, 0.3);
+            margin: 1rem 0 0.5rem;
         }
-        nav {
-            background: #222;
-            padding: 0.75rem;
-            text-align: center;
+
+        header p { 
+            color: var(--subtle); 
+            font-size: 1.1rem; 
+            max-width: 800px; 
+            margin: 0 auto;
         }
-        nav a {
-            color: #33ff33;
-            text-decoration: none;
-            margin: 0 1.2rem;
-            font-weight: bold;
-        }
-        nav a:hover { 
-            color: #66ff66; 
-            text-shadow: 0 0 6px #0f0; 
-        }
-        nav a:visited {
-            color: #33ff33;
-        }
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        .container { 
-            background: #1e1e1e;
-            padding: 1.5rem; 
-            margin: 1rem 0; 
-            border: 1px solid #444; 
-            border-radius: 6px;
-        }
-        .balance-card {
-            background: #222;
-            padding: 1rem;
-            margin: 0.75rem 0;
-            border-left: 4px solid #33ff33;
-        }
-        .harm { color: #ff3333; font-weight: bold; }
-        .surplus { color: #33ff33; font-weight: bold; }
-        .neutral { color: #bbb; }
-        button, input, select, textarea {
-            background: #222;
-            color: #f5f5f5;
-            border: 1px solid #555;
-            padding: 0.6rem;
-            margin: 0.6rem 0;
-            font-family: 'Courier New', monospace;
-            border-radius: 4px;
-        }
-        button {
-            background: #33ff33;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button:hover { background: #0a0; color: #fff; }
-        footer {
-            text-align: center;
-            margin-top: 2rem;
-            padding: 1rem;
-            border-top: 1px solid #333;
-            color: #aaa;
-        }
+
+        /* Candle Flame */
         .candle {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 1rem auto;
+            margin: 0 auto 1rem;
+            height: 70px;
         }
+
         .flame {
             width: 0;
             height: 0;
             border-left: 15px solid transparent;
             border-right: 15px solid transparent;
-            border-bottom: 30px solid #ff0;
-            animation: flicker 1s infinite alternate;
+            border-bottom: 35px solid #ff9900;
+            border-radius: 50%;
+            animation: flicker 1.2s infinite alternate;
+            filter: blur(1px);
         }
+
         .wick {
-            width: 2px;
+            width: 3px;
             height: 15px;
             background: #333;
         }
+
         .wax {
             width: 20px;
             height: 40px;
-            background: #eee;
-            border-radius: 4px;
+            background: linear-gradient(to bottom, #f0f0f0, #ccc);
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
         }
+
         @keyframes flicker {
-            from { border-bottom-color: #ff0; transform: scaleY(1); }
-            to { border-bottom-color: #ffa500; transform: scaleY(1.1); }
+            0% { border-bottom-color: #ff6600; transform: scaleY(1) scaleX(1); }
+            50% { border-bottom-color: #ffaa00; }
+            100% { border-bottom-color: #ffff00; transform: scaleY(1.15) scaleX(0.9); }
+        }
+
+        /* Navigation */
+        nav {
+            background: #1a1410;
+            padding: 1rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav a {
+            margin: 0 1.5rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: all 0.3s;
+            transform: translateX(-50%);
+        }
+
+        nav a:hover::after { width: 100%; }
+
+        /* Main content */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 2rem 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--subtle);
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        footer p { max-width: 800px; margin: 0 auto; }
+
+        /* Cards */
+        .card {
+            background: var(--bg);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--accent);
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -125,20 +182,27 @@
             <div class="wick"></div>
             <div class="wax"></div>
         </div>
-        <h1>⬡ THE VOW LEDGER</h1>
-        <p>A permanent record of institutional harm and repair</p>
+        <h1>THE VOW LEDGER</h1>
+        <p>A permanent, irreversible record of institutional harm — measured, acknowledged, and never erased.</p>
     </header>
+
     <nav>
         <a href="/">Home</a>
-        <a href="/submit">Submit Entry</a>
+        <a href="/submit">Submit Testimony</a>
         <a href="/methodology">Methodology</a>
-        <a href="/info">Info</a>
+        <a href="/info">About the Ledger</a>
     </nav>
+
     <main>
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
     </main>
+
     <footer>
-        <p>Every wound becomes debt. Every debt becomes repair. The ledger is open.</p>
+        <p>
+            Every wound becomes debt. Every debt demands repair.<br>
+            The ledger is open. The counting has begun. And it cannot be stopped.
+        </p>
     </footer>
 </body>
 </html>

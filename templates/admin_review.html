@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Admin Review — {{ submission.entity.entity_name|default(submission.entity.entity_id) }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="submit-card">
+    <h1 class="title">Review Submission</h1>
+    <p class="subtitle">
+      Entity: <strong>{{ submission.entity.entity_name|default(submission.entity.entity_id) }}</strong><br>
+      Year: <strong>{{ submission.event.year }}</strong><br>
+      Submitted: {{ submission.received_at }}
+    </p>
+
+    <div class="subsection">
+      <h3 style="color: var(--accent);">Narrative</h3>
+      <p style="color: var(--fg); white-space:pre-wrap; line-height:1.7;">
+        {{ submission.event.description }}
+      </p>
+    </div>
+
+    <!-- Approve form -->
+    <form method="POST" action="/admin/{{ secret }}/approve/{{ submission.filename }}">
+      <div class="subsection">
+        <h3 style="color: var(--accent);">Claimed Harm (Editable)</h3>
+        <ul style="color: var(--fg); list-style: none; padding: 0;">
+          <li style="margin: 1rem 0;">
+            Life & Bodily Harm:
+            <input type="number" name="life" value="{{ submission.harm.life_loss|default(0) }}" min="0" style="width: 200px; margin-left:10px;">
+          </li>
+          <li style="margin: 1rem 0;">
+            Financial Harm (USD):
+            <input type="text" name="financial" value="{{ submission.harm.financial_loss|default('') }}" placeholder="e.g. 25000000" style="width: 250px; margin-left:10px;">
+          </li>
+          <li style="margin: 1rem 0;">
+            Ecosystem Harm (ECY equivalent):
+            <input type="number" name="ecosystem" value="{{ submission.harm.ecosystem_loss|default(0) }}" step="0.1" style="width: 200px; margin-left:10px;">
+          </li>
+        </ul>
+      </div>
+
+      {% if submission.surplus %}
+      <div class="subsection">
+        <h3 style="color: var(--accent);">Claimed Surplus (Context Only)</h3>
+        <ul style="color: var(--fg); list-style: none; padding: 0;">
+          <li>Life Saved: {{ submission.surplus.life_saved|default(0) }}</li>
+          <li>Financial: ${{ submission.surplus.financial_surplus|default('0') }}</li>
+          <li>Ecosystem: {{ submission.surplus.ecosystem_surplus|default('None') }}</li>
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="subsection">
+        <h3 style="color: var(--accent);">Intent / Type</h3>
+        <select name="intent_type" style="width:100%; padding:1rem;">
+          <option value="NEGLIGENCE" {% if submission.intent_type == 'NEGLIGENCE' %}selected{% endif %}>Negligence</option>
+          <option value="RECKLESSNESS" {% if submission.intent_type == 'RECKLESSNESS' %}selected{% endif %}>Recklessness</option>
+          <option value="DELIBERATE" {% if submission.intent_type == 'DELIBERATE' %}selected{% endif %}>Deliberate</option>
+          <option value="SYSTEMIC" {% if submission.intent_type == 'SYSTEMIC' %}selected{% endif %}>Systemic</option>
+          <option value="COVER_UP" {% if submission.intent_type == 'COVER_UP' %}selected{% endif %}>Cover-Up</option>
+        </select>
+
+        <label class="checkbox-label" style="margin-top:1.5rem;">
+          <input type="checkbox" name="flag_spam" {% if submission.flag_spam %}checked{% endif %}>
+          Mark as potential spam / suspicious
+        </label>
+      </div>
+
+	  <div class="subsection">
+        <h3 style="color: var(--accent);">Evidence Files</h3>
+        {% if submission.evidence.files|length > 0 %}
+          <ul style="list-style:none; padding-left:0;">
+            {% for f in submission.evidence.files %}
+              <li style="margin:0.8rem 0;">
+                <a href="/evidence/{{ submission.entity.entity_id }}/{{ f.hash }}{{ f.extension }}" target="_blank" style="color:#0f8;">
+                  {% if f.extension|lower in ['.jpg', '.jpeg', '.png', '.gif'] %}🖼{% elif f.extension|lower == '.pdf' %}📄{% elif f.extension|lower in ['.mp4', '.webm'] %}🎥{% elif f.extension|lower == '.mp3' %}🔊{% else %}📎{% endif %}
+                  {{ f.original_filename }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color: var(--subtle);">No uploaded files.</p>
+        {% endif %}
+
+        {% if submission.evidence.links|length > 0 %}
+          <p style="margin-top:1rem;">External Links:</p>
+          <ul style="list-style:none; padding-left:0;">
+            {% for link in submission.evidence.links %}
+              <li><a href="{{ link }}" target="_blank" style="color: var(--accent);">{{ link }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <div style="text-align:center; margin:3rem 0;">
+        <button type="submit" class="btn-submit" style="background:#e3b04b; color:#1a1410; padding:1.3rem 3rem; font-size:1.4rem;">
+          Approve & Inscribe
+        </button>
+      </div>
+    </form>
+
+    <!-- Reject form -->
+    <div style="text-align:center; margin-top:2rem;">
+      <form method="POST" action="/admin/{{ secret }}/reject/{{ submission.filename }}">
+        <button type="submit" class="btn-submit" style="background:#c94b4b; color:#fff; padding:1rem 2.5rem;">
+          Reject Testimony
+        </button>
+      </form>
+    </div>
+
+    <p style="text-align:center; margin-top:3rem; color: var(--subtle); font-style:italic;">
+      Approval will invoke the ledger calculator using the edited values.<br>
+      Rejection will record a rejection and optionally log spam/DoS as suppression.
+    </p>
+
+    <p style="text-align:center; margin-top:4rem;">
+      <a href="/admin/{{ secret }}/pending" style="color: var(--subtle);">
+        ← Back to Pending
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

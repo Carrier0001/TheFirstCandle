@@ -1,86 +1,162 @@
 {% extends "base.html" %}
-{% block title %}The First Candle — Public Ledger{% endblock %}
+{% block title %}The Vow Ledger — Public Ledger{% endblock %}
 
 {% block content %}
-<h2 style="color:#fff; text-shadow:0 0 8px #0f0; font-size:2.5rem; margin-bottom:0.5rem;">
+<h2 style="color: var(--fg); text-shadow: 0 0 8px rgba(227, 176, 75, 0.3); font-size: 2.8rem; margin-bottom: 0.5rem; text-align: center;">
     The Ledger is Open
 </h2>
-<p style="color:#aaa; margin-bottom:2rem;">
+<p style="color: var(--subtle); text-align: center; margin-bottom: 3rem; font-size: 1.2rem;">
     Irreversible harm measured in Life-Years (LY) and Equivalent Carbon Years (ECY)<br>
     As of {{ current_date }}
 </p>
 
-<div class="container">
-
-  {% if entities %}
-    {% for entity in entities %}
-      <div class="balance-card">
-        <h3>
-          <a href="/entity/{{ entity.entity_id }}" style="color:#33ff33; text-decoration:none; text-shadow:0 0 4px #0f0;">
-            {{ entity.entity_name }}
-          </a>
-        </h3>
-        <p class="neutral">
-          Status: <strong style="color:#ff0;">{{ entity.lifetime.status.value }}</strong> 
-          • Entries: <strong>{{ entity.entries|length }}</strong>
-        </p>
-
-        <div class="grid-2" style="margin-top:0.8rem;">
-          <div>
-            <p class="harm big">
-              Outstanding LY: 
-              <span>{{ "%.2f"|format(entity.lifetime.outstanding_ly / 1000000) }} million</span>
-            </p>
-            <p class="harm">
-              Outstanding ECY: 
-              <span>{{ "%.2f"|format(entity.lifetime.outstanding_ecy / 1000000) }} million</span>
-            </p>
-          </div>
-          <div style="text-align:right; color:#ccc; font-size:0.9em;">
-            {% if entity.lifetime.years_to_repair %}
-              <p>Est. repair time:<br>
-                <strong style="color:#0f8;">{{ entity.lifetime.years_to_repair }} years</strong>
-              </p>
-            {% else %}
-              <p style="color:#f44;">Cannot repair<br>at current rate</p>
-            {% endif %}
-          </div>
-        </div>
-
-        <div style="margin-top:1rem; font-size:0.9em; color:#888;">
-          Measured: {{ entity.measurement_date }}
-        </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <div class="balance-card">
-      <p class="neutral" style="font-size:1.2em; text-align:center;">
-        No entities in the ledger yet.<br><br>
-        The counting begins on December 21, 2025.
-      </p>
+<div style="max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;">
+    <!-- Search -->
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <input type="text" id="entitySearch" placeholder="Search entities..."
+               style="width: 80%; max-width: 500px; padding: 1rem; font-size: 1.1rem; border-radius: 8px; border: 1px solid var(--border); background: #0f0c09; color: var(--fg);">
     </div>
-  {% endif %}
 
-  <!-- Optional: Submit link (uncomment when ready)
-  <p style="margin-top:2rem; text-align:center;">
-    <a href="/submit" style="color:#33ff33; text-decoration:none; font-size:1.1em;">
-      ⬡ Propose a new entry or entity
-    </a>
-  </p>
-  -->
+    {% if entities %}
+        <div class="entities-grid">
+            {% for entity in entities|sort(attribute="lifetime.outstanding_ly", reverse=True) %}
+                {% set ly = entity.lifetime.outstanding_ly|abs %}
+                {% set ecy = entity.lifetime.outstanding_ecy|abs %}
+                {% set total_entries = entity.total_entries %}
 
+                <div class="balance-card entity-card" data-name="{{ entity.entity_name|lower }}">
+                    <h3>
+                        <a href="/entity/{{ entity.entity_id }}"
+                           style="color: var(--accent); text-decoration: none; text-shadow: 0 0 6px rgba(227, 176, 75, 0.3);">
+                            {{ entity.entity_name }}
+                        </a>
+                        {% if entity.has_systemic %}
+                            <span style="color: var(--warn); font-size: 0.8em; margin-left: 0.5rem;">⚡ Systemic</span>
+                        {% endif %}
+                    </h3>
+
+                    <p class="neutral" style="margin: 0.6rem 0;">
+                        Status: 
+                        <strong style="color: var(--warn);">
+                            {% if ly == 0 %}
+                                RESOLVED
+                            {% else %}
+                                UNRESOLVED
+                            {% endif %}
+                        </strong>
+                        • Entries: <strong>{{ total_entries }}</strong>
+                    </p>
+
+                    <div class="grid-2" style="margin-top: 1rem;">
+                        <div>
+                            <p class="harm big">
+                                Outstanding LY:
+                                {% if ly >= 1_000_000 %}
+                                    <span>{{ "%.2f"|format(ly / 1_000_000) }} million</span>
+                                {% elif ly >= 1_000 %}
+                                    <span>{{ "%.1f"|format(ly / 1_000) }} thousand</span>
+                                {% else %}
+                                    <span>{{ ly|comma_format }}</span>
+                                {% endif %}
+                            </p>
+                            <p class="harm">
+                                Outstanding ECY:
+                                {% if ecy >= 1_000_000 %}
+                                    <span>{{ "%.2f"|format(ecy / 1_000_000) }} million</span>
+                                {% else %}
+                                    <span>{{ ecy|comma_format }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div style="text-align: right; color: var(--subtle); font-size: 0.95rem;">
+                            <p style="color: var(--error);">
+                                {% if ly == 0 %}
+                                    Fully Resolved
+                                {% else %}
+                                    Unresolved<br>at current rate
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--subtle); text-align: right;">
+                        Measured: {{ entity.measurement_date }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="balance-card" style="text-align: center; padding: 4rem;">
+            <p style="font-size: 1.4rem; color: var(--subtle);">
+                No entities in the ledger yet.<br><br>
+                The counting begins when the first testimony arrives.
+            </p>
+        </div>
+    {% endif %}
 </div>
 
 <style>
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  @media (max-width: 768px) {
-    .grid-2 { grid-template-columns: 1fr; }
-  }
-  .big { font-size: 1.4em; font-weight: bold; }
+    .entities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .entities-grid { 
+            grid-template-columns: 1fr; 
+        }
+    }
+
+    .balance-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.8rem;
+        box-shadow: 0 0 15px rgba(227, 176, 75, 0.1);
+        transition: all 0.3s;
+    }
+
+    .balance-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 25px rgba(227, 176, 75, 0.2);
+    }
+
+    .harm { 
+        color: var(--error); 
+        margin: 0.4rem 0; 
+    }
+
+    .big { 
+        font-size: 1.5rem; 
+        font-weight: bold; 
+    }
+
+    .neutral { 
+        color: var(--subtle); 
+    }
+
+    .grid-2 { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 2rem; 
+    }
+
+    @media (max-width: 600px) {
+        .grid-2 { 
+            grid-template-columns: 1fr; 
+        }
+    }
 </style>
 
+<script>
+    document.getElementById('entitySearch').addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('.entity-card').forEach(card => {
+            const name = card.dataset.name;
+            card.style.display = name.includes(filter) ? '' : 'none';
+        });
+    });
+</script>
 {% endblock %}
