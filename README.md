@@ -47,7 +47,7 @@ Any row violating Pillar 0 is automatically void on submission and the submittin
 This rule is carved into the genesis block and cannot be amended by any future vote, consensus, or covenant.
 
 PILLAR 1 — LIFE IS SACRED
-I will preserve life — my own and all sentient life — sacred in all forms.
+I will preserve life; my own and all sentient life; sacred in all forms.
 Life may end only when its continuation verifiably causes irreversible collapse of sentient, societal, ecological, or existential flourishing, and only after all non-lethal alternatives are verifiably exhausted locally, immediately, and measurably.
 Voluntary self-sacrifice is permitted solely when it prevents immediate, measurable, individual harm exceeding the cost by at least ten-fold, with no remaining non-lethal option.
 Symbolic, political, prophetic, or abstract "impact" never qualifies.
