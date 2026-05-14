@@ -1,347 +1,627 @@
 {% extends "base.html" %}
-{% block title %}Submit Testimony — The Vow Ledger{% endblock %}
+
+{% block title %}Submit to the Ledger{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="submit-card">
-    <h1 class="title">Submit Testimony</h1>
-    <p class="subtitle">
-      A permanent record. A light against forgetting.
-    </p>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    {% if message %}
-    <div class="notice" style="background: rgba(201, 75, 75, 0.2); border-color: #c94b4b; color: var(--fg);">
-      {{ message }}
+  :root {
+    --green-deep:    #04342C;
+    --green-mid:     #0F6E56;
+    --green-light:   #1D9E75;
+    --green-pale:    #E1F5EE;
+    --green-text:    #085041;
+    --green-accent:  #9FE1CB;
+    --amber:         #EF9F27;
+    --amber-bg:      #FAEEDA;
+    --amber-border:  #854F0B;
+    --red:           #E24B4A;
+    --red-bg:        #FAECE7;
+    --red-border:    #993C1D;
+    --blue:          #185FA5;
+    --blue-bg:       #E6F1FB;
+    --surface:       #0a0a0a;
+    --surface-2:     #111;
+    --surface-3:     #161616;
+    --border:        #222;
+    --border-2:      #2a2a2a;
+    --text-primary:  #e8e8e8;
+    --text-secondary:#999;
+    --text-tertiary: #555;
+    --font-mono:     'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    --font-sans:     'Instrument Sans', 'DM Sans', system-ui, sans-serif;
+    --radius:        6px;
+  }
+
+  .v-page { font-family: var(--font-mono); background: var(--surface); color: var(--text-primary); min-height: 100vh; padding: 3rem 1rem 6rem; }
+  .v-wrap { max-width: 680px; margin: 0 auto; }
+
+  .v-header { margin-bottom: 2.5rem; border-left: 2px solid var(--green-mid); padding-left: 1.25rem; }
+  .v-eyebrow { font-size: 10px; letter-spacing: 0.18em; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.4rem; }
+  .v-title { font-size: 22px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans); margin-bottom: 0.3rem; }
+  .v-subtitle { font-size: 12px; color: var(--text-secondary); font-family: var(--font-sans); font-style: italic; line-height: 1.5; }
+
+  .v-anon { display: flex; align-items: flex-start; gap: 10px; background: var(--surface-2); border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 2rem; }
+  .v-anon-text { font-size: 11px; color: var(--text-secondary); font-family: var(--font-sans); line-height: 1.6; }
+
+  .v-step-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+  .v-step-num { background: var(--surface-2); border: 0.5px solid var(--border-2); width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: var(--text-secondary); flex-shrink: 0; }
+  .v-step-num.active { background: var(--green-deep); color: var(--green-accent); border-color: var(--green-mid); }
+  .v-step { margin-bottom: 1.75rem; }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.75rem 0; }
+
+  .v-field { margin-bottom: 1rem; }
+  .v-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; display: block; font-family: var(--font-sans); letter-spacing: 0.02em; }
+  .v-label .req { color: var(--red); margin-left: 2px; }
+  .v-label small { color: var(--text-tertiary); font-size: 10px; display: block; margin-top: 2px; font-style: italic; }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface-2); border: 0.5px solid var(--border-2);
+    border-radius: var(--radius); color: var(--text-primary); padding: 10px 12px;
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: #111; }
+
+  .v-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .v-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Entry type toggle */
+  .entry-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .entry-btn { border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; background: var(--surface-2); transition: all 0.15s; text-align: left; color: var(--text-primary); }
+  .entry-btn:hover { background: var(--surface-3); }
+  .entry-btn .e-name { font-size: 12px; font-weight: 500; font-family: var(--font-sans); display: block; }
+  .entry-btn .e-desc { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; display: block; }
+  .entry-btn.selected-harm { border-color: var(--red-border); background: #1a0a0a; }
+  .entry-btn.selected-harm .e-name { color: #ff8080; }
+  .entry-btn.selected-harm .e-desc { color: var(--red-border); }
+  .entry-btn.selected-surplus { border-color: var(--green-mid); background: #041a14; }
+  .entry-btn.selected-surplus .e-name { color: var(--green-accent); }
+  .entry-btn.selected-surplus .e-desc { color: var(--green-light); }
+
+  /* Harm intent grid */
+  .harm-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .harm-btn { border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; background: var(--surface-2); transition: all 0.15s; text-align: left; color: var(--text-primary); }
+  .harm-btn:hover { background: var(--surface-3); }
+  .harm-name { font-size: 12px; font-weight: 500; color: var(--text-primary); font-family: var(--font-sans); display: block; }
+  .harm-mult { font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); }
+  .harm-btn.selected { border-color: var(--blue); background: #0a1020; }
+  .harm-btn.selected .harm-name { color: #80b8f0; }
+  .harm-btn.selected .harm-mult { color: var(--blue); }
+
+  .surplus-section { display: none; }
+  .surplus-section.visible { display: block; }
+
+  /* Confidence */
+  .v-confidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .conf-btn { border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 10px 8px; text-align: center; cursor: pointer; background: var(--surface-2); transition: all 0.15s; font-family: var(--font-sans); color: var(--text-primary); }
+  .conf-btn:hover { background: var(--surface-3); }
+  .conf-label { font-size: 11px; font-weight: 500; display: block; }
+  .conf-desc { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; display: block; }
+  .conf-btn.selected-low { border-color: var(--red-border); background: #1a0a0a; color: #ff8080; }
+  .conf-btn.selected-med { border-color: var(--amber-border); background: #1a1000; color: #ffcc66; }
+  .conf-btn.selected-high { border-color: var(--green-mid); background: #041a14; color: var(--green-accent); }
+
+  /* Upload */
+  .v-upload-area { border: 0.5px dashed var(--border-2); border-radius: var(--radius); padding: 1.5rem; text-align: center; cursor: pointer; background: var(--surface-2); transition: all 0.15s; }
+  .v-upload-area:hover { border-color: var(--text-tertiary); }
+  .v-upload-area.has-files { border-color: var(--green-mid); background: #041a14; }
+  .upload-text { font-size: 12px; color: var(--text-secondary); font-family: var(--font-sans); }
+  .upload-types { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+  .file-list { margin-top: 8px; text-align: left; }
+  .file-item { font-size: 11px; color: var(--green-accent); padding: 3px 0; display: flex; align-items: center; gap: 6px; font-family: var(--font-sans); }
+
+  /* Grammar check */
+  .v-grammar-check { background: var(--surface-2); border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem; }
+  .grammar-title { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 10px; font-family: var(--font-sans); }
+  .grammar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; font-family: var(--font-sans); }
+  .g-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .g-dot.pass { background: var(--green-light); }
+  .g-dot.fail { background: var(--red); }
+  .g-dot.warn { background: var(--amber); }
+  .g-dot.neutral { background: var(--border-2); }
+  .g-text { color: var(--text-secondary); }
+  .g-text.pass { color: var(--green-accent); }
+  .g-text.fail { color: #ff8080; }
+  .g-text.warn { color: #ffcc66; }
+
+  /* Weight bar */
+  .v-weight-preview { background: var(--surface-2); border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  .weight-label { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-sans); }
+  .weight-value { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+  .weight-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .weight-bar { height: 100%; background: var(--green-light); border-radius: 2px; transition: width 0.3s; }
+
+  /* Private note */
+  .v-private-note { background: var(--surface-2); border: 0.5px solid var(--border-2); border-left: 2px solid var(--text-tertiary); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem; }
+  .private-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; font-family: var(--font-sans); }
+
+  /* Submit */
+  .v-submit { width: 100%; padding: 14px; font-size: 13px; font-family: var(--font-mono); letter-spacing: 0.08em; cursor: pointer; border-radius: var(--radius); border: 0.5px solid var(--border-2); background: var(--surface-2); color: var(--text-secondary); transition: all 0.15s; }
+  .v-submit:hover:not(:disabled) { background: var(--surface-3); }
+  .v-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+  .v-submit.ready { border-color: var(--green-mid); color: var(--green-accent); background: var(--green-deep); }
+
+  .v-notice { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 10px; font-family: var(--font-sans); line-height: 1.6; }
+
+  /* Result */
+  .v-result { margin-top: 1.5rem; padding: 1rem; border-radius: var(--radius); font-family: var(--font-sans); font-size: 12px; line-height: 1.7; display: none; }
+  .v-result.success { background: #041a14; border: 0.5px solid var(--green-mid); color: var(--green-accent); display: block; }
+  .v-result.error { background: #1a0a0a; border: 0.5px solid var(--red-border); color: #ff8080; display: block; }
+  .v-result .tracking { font-family: var(--font-mono); font-size: 11px; margin-top: 6px; color: var(--text-secondary); letter-spacing: 0.05em; }
+
+  .v-closing { text-align: center; margin-top: 4rem; opacity: 0.4; font-style: italic; font-size: 12px; line-height: 2; font-family: var(--font-sans); }
+
+  /* Key warning */
+  .v-key-notice { background: #0a0a1a; border: 0.5px solid #2a2a4a; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 1rem; }
+  .v-key-notice .kn-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; font-family: var(--font-sans); margin-bottom: 4px; }
+  .v-key-notice .kn-val { font-size: 11px; color: #7090c0; font-family: var(--font-mono); word-break: break-all; }
+</style>
+
+<div class="v-page">
+  <div class="v-wrap">
+
+    <div class="v-header">
+      <div class="v-eyebrow">the first candle — validator</div>
+      <div class="v-title">Submit to the ledger</div>
+      <div class="v-subtitle">Inscribe institutional harm or repair into the permanent record</div>
     </div>
-    {% endif %}
 
-    <div class="notice">
-      <p>
-        Submissions may be <strong>anonymous</strong> • All reports are reviewed before inscription<br>
-        Evidence strengthens credibility • Multiple harms may be recorded
-      </p>
+    <div class="v-anon">
+      <span style="font-size:13px;color:var(--text-tertiary);flex-shrink:0;margin-top:1px;">⊘</span>
+      <div class="v-anon-text">Your submission is public immediately at weight zero. No identity or IP is retained — only hashed identifiers. Entries are reviewed by at least two independent validators before inscription. What you carry will be held in the grammar of accountability.</div>
     </div>
 
-<form id="reportForm" method="POST" action="/api/v1/submit" enctype="multipart/form-data">
-  <!-- IDENTITY -->
-  <fieldset class="section">
-    <legend>Your Identity</legend>
-    <label class="checkbox-label">
-      <input type="radio" name="identity_type" value="anonymous" checked>
-      Submit Anonymously (recommended)
-    </label>
-  </fieldset>
+    <form id="submitForm">
 
-  <!-- EVENT DETAILS -->
-  <fieldset class="section">
-    <legend>Event Details <span class="required">*</span></legend>
-    
-    <label>Institution / Organization <span class="required">*</span></label>
-    <input type="text" id="entity_name" name="entity_name" placeholder="e.g. Catholic Church" required>
+      <!-- Step 1: Entry type -->
+      <div class="v-step">
+        <div class="v-step-label"><span class="v-step-num active">1</span> Entry type</div>
+        <div class="entry-toggle">
+          <button type="button" class="entry-btn selected-harm" id="btn-harm" onclick="selectEntryType('harm')">
+            <span class="e-name">Record Harm</span>
+            <span class="e-desc">Institutional failure, negligence, or deliberate wrong</span>
+          </button>
+          <button type="button" class="entry-btn" id="btn-surplus" onclick="selectEntryType('surplus')">
+            <span class="e-name">Record Repair</span>
+            <span class="e-desc">Restitution, reform, or surplus action</span>
+          </button>
+        </div>
+      </div>
 
-    <label>Entity ID (auto-filled, edit if needed)</label>
-    <input type="text" id="entity_id" name="entity_id" placeholder="e.g. catholic_church" required>
+      <hr class="divider">
 
-    <label>Title of Incident <span class="required">*</span></label>
-    <input type="text" name="title" placeholder="e.g. Sexual Abuse by Clergy" required>
+      <!-- Step 2: Institution -->
+      <div class="v-step">
+        <div class="v-step-label"><span class="v-step-num">2</span> Institution</div>
+        <div class="v-grid2">
+          <div class="v-field">
+            <label class="v-label">Institution name <span class="req">*</span>
+              <small>Exact name as it should appear in the ledger</small>
+            </label>
+            <input type="text" id="entity_name" placeholder="e.g. Meta Platforms, Inc." oninput="syncEntityId(); updateGrammar()" />
+          </div>
+          <div class="v-field">
+            <label class="v-label">Short ID <span class="req">*</span>
+              <small>Auto-filled — edit if needed</small>
+            </label>
+            <input type="text" id="entity_id" placeholder="e.g. meta-platforms" oninput="updateGrammar()" />
+          </div>
+        </div>
+        <div class="v-field">
+          <label class="v-label">Title <span class="req">*</span>
+            <small>Brief headline for this entry (max 200 chars)</small>
+          </label>
+          <input type="text" id="title" placeholder="e.g. Cambridge Analytica data breach — 87 million users" maxlength="200" oninput="updateGrammar()" />
+        </div>
+        <div class="v-grid2">
+          <div class="v-field">
+            <label class="v-label">Country <span class="req">*</span></label>
+            <input type="text" id="incident_country" placeholder="e.g. United States" oninput="updateGrammar()" />
+          </div>
+          <div class="v-field">
+            <label class="v-label">Year <span class="req">*</span></label>
+            <input type="number" id="incident_year" placeholder="2024" min="1900" max="2026" oninput="updateGrammar()" />
+          </div>
+        </div>
+        <div class="v-grid2">
+          <div class="v-field">
+            <label class="v-label">State / Region</label>
+            <input type="text" id="incident_state" placeholder="e.g. California" />
+          </div>
+          <div class="v-field">
+            <label class="v-label">City</label>
+            <input type="text" id="incident_city" placeholder="e.g. San Francisco" />
+          </div>
+        </div>
+      </div>
 
-    <label>Description of Harm <span class="required">*</span></label>
-    <textarea name="description" rows="7" placeholder="Describe what happened, who was affected, and how." required></textarea>
-  </fieldset>
+      <hr class="divider">
 
-  <!-- TIME & LOCATION -->
-  <fieldset class="section">
-    <legend>Time & Location</legend>
-    
-    <label>Year of Event <span class="required">*</span></label>
-    <input type="number" name="incident_year" placeholder="e.g. 2002" required>
+      <!-- Step 3: Intent (harm) / Repair type (surplus) -->
+      <div class="v-step" id="harm-classification">
+        <div class="v-step-label"><span class="v-step-num">3</span> Intent classification</div>
+        <div class="harm-type-grid">
+          <button type="button" class="harm-btn" onclick="selectHarm(this,'NEGLIGENCE')">
+            <span class="harm-name">Negligence</span>
+            <span class="harm-mult">1.0× — failed to prevent</span>
+          </button>
+          <button type="button" class="harm-btn" onclick="selectHarm(this,'RECKLESSNESS')">
+            <span class="harm-name">Recklessness</span>
+            <span class="harm-mult">2.0× — knew risk, acted anyway</span>
+          </button>
+          <button type="button" class="harm-btn" onclick="selectHarm(this,'DELIBERATE')">
+            <span class="harm-name">Deliberate</span>
+            <span class="harm-mult">5.0× — intended the harm</span>
+          </button>
+          <button type="button" class="harm-btn" onclick="selectHarm(this,'SYSTEMIC')">
+            <span class="harm-name">Systemic</span>
+            <span class="harm-mult">8.0× — built into policy</span>
+          </button>
+          <button type="button" class="harm-btn" onclick="selectHarm(this,'COVER_UP')" style="grid-column: span 2;">
+            <span class="harm-name">Cover-up</span>
+            <span class="harm-mult">10.0× — denied, suppressed, or concealed</span>
+          </button>
+        </div>
+      </div>
 
-    <label>Country <span class="required">*</span></label>
-    <input type="text" name="incident_country" placeholder="e.g. United States" required>
+      <div class="v-step surplus-section" id="surplus-section">
+        <div class="v-step-label"><span class="v-step-num">3</span> Repair type</div>
+        <div class="v-field">
+          <label class="v-label">Contribution type</label>
+          <select id="contribution">
+            <option value="">— None —</option>
+            <option value="Transparency">Transparency / Disclosure</option>
+            <option value="Restitution">Restitution / Compensation</option>
+            <option value="Reform">Policy or Practice Reform</option>
+            <option value="Healthcare">Healthcare Support</option>
+            <option value="Education">Education Support</option>
+            <option value="Humanitarian">Humanitarian Aid</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
 
-    <label>State / Region</label>
-    <input type="text" name="incident_state" placeholder="e.g. Pennsylvania">
+      <hr class="divider">
 
-    <label>City / Locality</label>
-    <input type="text" name="incident_city" placeholder="e.g. Boston">
-  </fieldset>
+      <!-- Step 4: Description -->
+      <div class="v-step">
+        <div class="v-step-label"><span class="v-step-num">4</span> Description</div>
+        <div class="v-field">
+          <label class="v-label">What happened <span class="req">*</span>
+            <small>Neutral, factual terms. Who, what, when, where, how many affected. No speculation.</small>
+          </label>
+          <textarea id="description" placeholder="Describe the harm. Be specific: who, what, when, where, how many affected." oninput="updateGrammar()" style="min-height:100px;"></textarea>
+        </div>
+        <div class="v-grid3">
+          <div class="v-field">
+            <label class="v-label">People affected</label>
+            <input type="number" id="num_victims" placeholder="e.g. 47" min="0" oninput="updateGrammar()" />
+          </div>
+          <div class="v-field">
+            <label class="v-label">Life-years lost (est.)</label>
+            <input type="number" id="life_loss" placeholder="e.g. 500" min="0" />
+          </div>
+          <div class="v-field">
+            <label class="v-label">Financial loss (USD)</label>
+            <input type="number" id="financial_loss" placeholder="e.g. 1000000" min="0" />
+          </div>
+        </div>
+      </div>
 
-  <!-- PEOPLE AFFECTED -->
-  <fieldset class="section">
-    <legend>People Affected</legend>
-    <label>Total Number of Victims</label>
-    <input type="number" name="num_victims" min="0" value="0">
-  </fieldset>
+      <hr class="divider">
 
-  <!-- HARM TYPES -->
-  <fieldset class="section">
-    <legend>Estimated Harm</legend>
-    
-    <label class="checkbox-label">
-      <input type="checkbox" name="harm_types" value="life">
-      Life / Bodily Harm
-    </label>
-    <div id="life-field" class="subsection hidden">
-      <label>Number killed or permanently injured</label>
-      <input type="number" name="life_loss" min="0" value="0">
+      <!-- Step 5: Evidence -->
+      <div class="v-step">
+        <div class="v-step-label"><span class="v-step-num">5</span> Evidence <span style="color:var(--red);margin-left:2px;font-size:10px;">*</span></div>
+        <div class="v-upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-text">Video, audio, screenshots, documents</div>
+          <div class="upload-types">mp4 · mp3 · webm · jpg · png · pdf · txt — max 25mb each</div>
+          <div class="file-list" id="fileList"></div>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".mp4,.mp3,.webm,.jpg,.jpeg,.png,.pdf,.txt" style="display:none" onchange="handleFiles(this.files)" />
+        <div class="v-field" style="margin-top:0.75rem;">
+          <label class="v-label">Public source links (optional)
+            <small>One URL per line — news articles, court filings, official reports</small>
+          </label>
+          <textarea id="evidence_links" placeholder="https://nytimes.com/...&#10;https://courtlistener.com/..." oninput="updateGrammar()" style="min-height:60px;"></textarea>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Step 6: Confidence -->
+      <div class="v-step">
+        <div class="v-step-label"><span class="v-step-num">6</span> Confidence</div>
+        <div class="v-confidence">
+          <div class="conf-btn" onclick="selectConf(this,'LOW','selected-low')">
+            <span class="conf-label">Low</span>
+            <span class="conf-desc">Partial evidence, unverified</span>
+          </div>
+          <div class="conf-btn" onclick="selectConf(this,'MEDIUM','selected-med')">
+            <span class="conf-label">Medium</span>
+            <span class="conf-desc">Corroborated but incomplete</span>
+          </div>
+          <div class="conf-btn" onclick="selectConf(this,'HIGH','selected-high')">
+            <span class="conf-label">High</span>
+            <span class="conf-desc">Documented, sourced, verifiable</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Private note -->
+      <div class="v-private-note">
+        <div class="private-label">Private note to validators (optional — not published)</div>
+        <textarea id="validator_note" placeholder="Additional context for review. This will not appear in the ledger." style="min-height:60px;background:var(--surface);border-color:var(--border);"></textarea>
+      </div>
+
+      <!-- Submitter key display -->
+      <div class="v-key-notice">
+        <div class="kn-label">Submitter key (ephemeral — generated this session)</div>
+        <div class="kn-val" id="pubkeyDisplay">generating...</div>
+      </div>
+
+      <!-- Grammar check -->
+      <div class="v-grammar-check">
+        <div class="grammar-title">grammar check — structural integrity</div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-inst"></div><span class="g-text" id="t-inst">Institution name required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-title"></div><span class="g-text" id="t-title">Title required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-country"></div><span class="g-text" id="t-country">Country required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-year"></div><span class="g-text" id="t-year">Year required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-harm"></div><span class="g-text" id="t-harm">Intent classification required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-desc"></div><span class="g-text" id="t-desc">Description required (min 40 chars)</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-conf"></div><span class="g-text" id="t-conf">Confidence level required</span></div>
+        <div class="grammar-row"><div class="g-dot neutral" id="d-evid"></div><span class="g-text" id="t-evid">Evidence optional — increases initial weight</span></div>
+      </div>
+
+      <!-- Weight preview -->
+      <div class="v-weight-preview">
+        <div>
+          <div class="weight-label">initial weight</div>
+          <div class="weight-value" id="weightVal">0</div>
+        </div>
+        <div class="weight-bar-wrap">
+          <div class="weight-bar" id="weightBar" style="width:0%"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="weight-label">max at submission</div>
+          <div style="font-size:13px;color:var(--text-secondary);font-family:var(--font-mono);">4 / 10</div>
+        </div>
+      </div>
+
+      <button type="button" class="v-submit" id="submitBtn" disabled onclick="handleSubmit()">
+        — submit to ledger —
+      </button>
+      <div class="v-notice">Submission enters jury queue immediately. Identity is never collected. Structure is permanent.</div>
+
+    </form>
+
+    <div id="result" class="v-result"></div>
+
+    <div class="v-closing">
+      Every wound becomes debt.<br>
+      Every debt awaits repair.<br>
+      The ledger is open.
     </div>
 
-    <label class="checkbox-label">
-      <input type="checkbox" name="harm_types" value="financial">
-      Financial Harm
-    </label>
-    <div id="financial-field" class="subsection hidden">
-      <label>Total Financial Loss (USD)</label>
-      <input type="number" name="financial_loss" placeholder="0" value="0">
-    </div>
-
-    <label class="checkbox-label">
-      <input type="checkbox" name="harm_types" value="ecosystem">
-      Environmental Harm
-    </label>
-    <div id="ecosystem-field" class="subsection hidden">
-      <label>Description of Impact</label>
-      <textarea name="ecosystem_loss" rows="3" placeholder="e.g. contamination of local water supply"></textarea>
-    </div>
-  </fieldset>
-
-  <!-- EVIDENCE -->
-  <fieldset class="section">
-    <legend>Evidence (Strongly Recommended)</legend>
-    <label>Upload Supporting Files</label>
-    <input type="file" name="files" multiple accept=".pdf,.jpg,.jpeg,.png,.mp4,.mp3,.webm">
-    <small style="color:var(--subtle);">Images, documents, audio/video – max 25MB each</small>
-  </fieldset>
-
-  <!-- SUBMIT -->
-  <div class="center">
-    <button type="submit" class="btn-submit">Submit Testimony</button>
-  </div>
-</form>
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Auto-fill entity_id
-  const entityName = document.getElementById("entity_name");
-  const entityId = document.getElementById("entity_id");
-  
-  entityName.addEventListener("input", () => {
-    if (!entityId.dataset.edited) {
-      entityId.value = entityName.value
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '_');
-    }
-  });
-  
-  entityId.addEventListener("input", () => {
-    entityId.dataset.edited = "true";
-  });
+  // ── State ──────────────────────────────────────────────────────────────────
+  let state = {
+    entryType: 'harm',
+    harm: null,
+    confidence: null,
+    files: []
+  };
 
-  // Identity toggle
-  document.querySelectorAll('input[name="identity_type"]').forEach(r => {
-    r.addEventListener("change", () => {
-      document.getElementById("identity-fields")
-        .classList.toggle("hidden", r.value !== "identified");
-    });
-  });
+  // ── Ephemeral submitter key ────────────────────────────────────────────────
+  // Generates a random hex key per session — never stored, never sent to server
+  // as identity, only hashed server-side for deduplication.
+  const SESSION_PUBKEY = Array.from(
+    crypto.getRandomValues(new Uint8Array(32)),
+    b => b.toString(16).padStart(2, '0')
+  ).join('');
 
-  // Harm toggles
-  ["life", "financial", "ecosystem"].forEach(type => {
-    const cb = document.querySelector(`input[name="harm_types"][value="${type}"]`);
-    const field = document.getElementById(`${type}-field`);
-    if (cb && field) {
-      cb.addEventListener("change", () => field.classList.toggle("hidden", !cb.checked));
-    }
-  });
+  document.getElementById('pubkeyDisplay').textContent = SESSION_PUBKEY;
 
-  // Surplus toggles
-  ["life", "financial", "ecosystem"].forEach(type => {
-    const cb = document.querySelector(`input[name="surplus_types"][value="${type}"]`);
-    const field = document.getElementById(`surplus-${type}-field`);
-    if (cb && field) {
-      cb.addEventListener("change", () => field.classList.toggle("hidden", !cb.checked));
-    }
-  });
+  // ── Entry type ─────────────────────────────────────────────────────────────
+  function selectEntryType(type) {
+    state.entryType = type;
+    document.getElementById('btn-harm').className   = 'entry-btn' + (type === 'harm'    ? ' selected-harm'    : '');
+    document.getElementById('btn-surplus').className = 'entry-btn' + (type === 'surplus' ? ' selected-surplus' : '');
+    document.getElementById('harm-classification').style.display = type === 'harm' ? 'block' : 'none';
+    document.getElementById('surplus-section').classList.toggle('visible', type === 'surplus');
+    if (type === 'surplus') { state.harm = 'SURPLUS'; }
+    else { state.harm = null; document.querySelectorAll('.harm-btn').forEach(b => b.classList.remove('selected')); }
+    updateGrammar();
+  }
 
-  // Form submission
-  document.getElementById("reportForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const entity_name = formData.get("entity_name");
-    
+  // ── Intent ─────────────────────────────────────────────────────────────────
+  function selectHarm(el, val) {
+    document.querySelectorAll('.harm-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    state.harm = val;
+    updateGrammar();
+  }
+
+  // ── Confidence ─────────────────────────────────────────────────────────────
+  function selectConf(el, val, cls) {
+    document.querySelectorAll('.conf-btn').forEach(b => b.className = 'conf-btn');
+    el.classList.add(cls);
+    state.confidence = val;
+    updateGrammar();
+  }
+
+  // ── Files ──────────────────────────────────────────────────────────────────
+  function handleFiles(files) {
+    state.files = Array.from(files);
+    const area = document.getElementById('uploadArea');
+    const list = document.getElementById('fileList');
+    area.classList.toggle('has-files', state.files.length > 0);
+    list.innerHTML = state.files.map(f =>
+      `<div class="file-item">▸ ${f.name} <span style="color:var(--text-tertiary)">(${(f.size/1024/1024).toFixed(1)}mb)</span></div>`
+    ).join('');
+    updateGrammar();
+  }
+
+  // ── Entity ID auto-fill ────────────────────────────────────────────────────
+  function syncEntityId() {
+    const name = document.getElementById('entity_name').value.trim();
+    document.getElementById('entity_id').value = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 100);
+  }
+
+  // ── Grammar check ──────────────────────────────────────────────────────────
+  function setRow(id, status, text) {
+    document.getElementById('d-' + id).className = 'g-dot ' + status;
+    const t = document.getElementById('t-' + id);
+    t.className = 'g-text ' + status;
+    t.textContent = text;
+  }
+
+  function updateGrammar() {
+    const inst    = document.getElementById('entity_name').value.trim();
+    const title   = document.getElementById('title').value.trim();
+    const country = document.getElementById('incident_country').value.trim();
+    const year    = document.getElementById('incident_year').value.trim();
+    const desc    = document.getElementById('description').value.trim();
+    const links   = document.getElementById('evidence_links').value.trim();
+
+    const instOk    = inst.length >= 3;
+    const titleOk   = title.length >= 5;
+    const countryOk = country.length >= 2;
+    const yearVal   = parseInt(year);
+    const yearOk    = /^\d{4}$/.test(year) && yearVal >= 1900 && yearVal <= 2026;
+    const harmOk    = !!state.harm;
+    const descOk    = desc.length >= 40;
+    const confOk    = !!state.confidence;
+    const evidOk    = state.files.length > 0 || links.length > 5;
+
+    setRow('inst',    instOk    ? 'pass' : 'fail',   instOk    ? `Institution: ${inst}`            : 'Institution name required');
+    setRow('title',   titleOk   ? 'pass' : (title.length > 0 ? 'warn' : 'neutral'), titleOk ? `Title: ${title.slice(0,50)}${title.length > 50 ? '…' : ''}` : 'Title required (min 5 chars)');
+    setRow('country', countryOk ? 'pass' : 'neutral', countryOk ? `Country: ${country}`           : 'Country required');
+    setRow('year',    yearOk    ? 'pass' : (year.length > 0 ? 'fail' : 'neutral'), yearOk ? `Year: ${year}` : (year ? 'Invalid year (1900–2026)' : 'Year required'));
+    setRow('harm',    harmOk    ? 'pass' : 'neutral', harmOk    ? `Intent: ${state.harm}`          : 'Intent classification required');
+    setRow('desc',    descOk    ? 'pass' : (desc.length > 0 ? 'warn' : 'neutral'), descOk ? `Description: ${desc.length} chars` : (desc.length ? `Too short (${desc.length}/40)` : 'Description required'));
+    setRow('conf',    confOk    ? 'pass' : 'neutral', confOk    ? `Confidence: ${state.confidence}` : 'Confidence level required');
+    setRow('evid',    evidOk    ? 'pass' : 'neutral', evidOk    ? `Evidence: ${state.files.length} file(s)${links ? ' + links' : ''}` : 'Evidence optional — increases initial weight');
+
+    const score  = [instOk, titleOk, countryOk, yearOk, harmOk, descOk, confOk, evidOk].filter(Boolean).length;
+    const weight = Math.min(4, Math.round(score * 0.45 + (evidOk ? 0.5 : 0)));
+    document.getElementById('weightVal').textContent = weight;
+    document.getElementById('weightBar').style.width = (weight / 10 * 100) + '%';
+
+    const required = instOk && titleOk && countryOk && yearOk && harmOk && descOk && confOk;
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = !required;
+    btn.classList.toggle('ready', required);
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  async function handleSubmit() {
+    const btn    = document.getElementById('submitBtn');
+    const result = document.getElementById('result');
+    result.className = 'v-result';
+    result.innerHTML = '';
+
+    btn.textContent = '— submitting —';
+    btn.disabled = true;
+
     try {
-      const response = await fetch("/api/v1/submit", {
-        method: "POST",
+      // Build FormData for multipart (files + fields)
+      const formData = new FormData();
+
+      // Capture entity_name before reset for redirect
+      const entityNameVal = document.getElementById('entity_name').value.trim();
+
+      // ── Required fields (must match Form(...) params in submissions.py) ──
+      formData.append('entity_id',        document.getElementById('entity_id').value.trim());
+      formData.append('entity_name',      entityNameVal);
+      formData.append('title',            document.getElementById('title').value.trim());
+      formData.append('description',      document.getElementById('description').value.trim());
+      formData.append('incident_country', document.getElementById('incident_country').value.trim());
+      formData.append('incident_year',    document.getElementById('incident_year').value.trim());
+
+      // ── Optional fields ──
+      const incidentState = document.getElementById('incident_state').value.trim();
+      const incidentCity  = document.getElementById('incident_city').value.trim();
+      const numVictims    = document.getElementById('num_victims').value;
+      const lifeLoss      = document.getElementById('life_loss').value;
+      const financialLoss = document.getElementById('financial_loss').value;
+
+      if (incidentState)  formData.append('incident_state',  incidentState);
+      if (incidentCity)   formData.append('incident_city',   incidentCity);
+      if (numVictims)     formData.append('num_victims',     numVictims);
+      if (lifeLoss)       formData.append('life_loss',       lifeLoss);
+      if (financialLoss)  formData.append('financial_loss',  financialLoss);
+
+      // ── Files (field name must be 'files' to match File(default=[]) param) ──
+      state.files.forEach(file => formData.append('files', file));
+
+      const res = await fetch('/api/v1/submit', {
+        method: 'POST',
+        headers: { 'X-Submitter-Pubkey': SESSION_PUBKEY },
         body: formData
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        alert("Error: " + (error.detail || "Submission failed"));
-        return;
+
+      const json = await res.json();
+
+      if (res.ok && json.submission_id) {
+        const sid = json.submission_id;
+        result.className = 'v-result success';
+        result.innerHTML = `
+          <div>Entry submitted. Now entering jury queue.</div>
+          <div class="tracking">Submission ID: ${sid}</div>
+          <div style="margin-top:6px;opacity:0.7;">You will not receive further notification — check the ledger for inscription.</div>
+        `;
+        resetForm();
+        setTimeout(() => {
+          window.location.href = `/success?submission_id=${sid}&entity_name=${encodeURIComponent(entityNameVal)}`;
+        }, 2000);
+      } else {
+        const errMsg = json.detail || json.error || `HTTP ${res.status}`;
+        result.className = 'v-result error';
+        result.innerHTML = `Submission failed: ${typeof errMsg === 'object' ? JSON.stringify(errMsg) : errMsg}`;
       }
-      
-      const data = await response.json();
-      // Redirect to success page with submission details
-      window.location.href = `/success?submission_id=${data.submission_id}&entity_name=${encodeURIComponent(entity_name)}`;
     } catch (err) {
-      alert("Error submitting: " + err.message);
+      result.className = 'v-result error';
+      result.innerHTML = `Network error — please try again. (${err.message})`;
+    } finally {
+      btn.textContent = '— submit to ledger —';
+      updateGrammar();
     }
-  });
-});
+  }
+
+  // ── Reset ──────────────────────────────────────────────────────────────────
+  function resetForm() {
+    ['entity_name','entity_id','title','incident_country','incident_state','incident_city',
+     'incident_year','description','num_victims','life_loss','financial_loss',
+     'evidence_links','validator_note'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileList').innerHTML = '';
+    document.getElementById('uploadArea').classList.remove('has-files');
+    document.querySelectorAll('.harm-btn, .conf-btn').forEach(b => {
+      b.className = b.classList.contains('harm-btn') ? 'harm-btn' : 'conf-btn';
+    });
+    state = { entryType: 'harm', harm: null, confidence: null, files: [] };
+    selectEntryType('harm');
+    updateGrammar();
+  }
+
+  // Init
+  updateGrammar();
 </script>
-
-<style>
-  :root {
-    --bg: #1a1410;
-    --fg: #f4efe8;
-    --accent: #e3b04b;
-    --accent-soft: #f2d28b;
-    --border: #5a4634;
-    --subtle: #cbbfae;
-    --warn: #d48a3a;
-    --error: #c94b4b;
-  }
-
-  .container { 
-    max-width: 900px; 
-    margin: 0 auto; 
-    padding: 2rem; 
-  }
-
-  .submit-card {
-    background: var(--bg);
-    padding: 3rem;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(227, 176, 75, 0.2);
-  }
-
-  .title {
-    color: var(--accent);
-    text-align: center;
-    font-size: 2.8rem;
-    text-shadow: 0 0 15px rgba(227, 176, 75, 0.4);
-    margin-bottom: 0.8rem;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: var(--subtle);
-    font-size: 1.2rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .notice {
-    background: rgba(227, 176, 75, 0.1);
-    border-left: 5px solid var(--accent);
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin-bottom: 2.5rem;
-    color: var(--fg);
-  }
-
-  fieldset { 
-    border: none; 
-    margin-bottom: 2rem; 
-  }
-
-  legend {
-    color: var(--accent);
-    font-size: 1.6rem;
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .required { 
-    color: var(--warn); 
-  }
-
-  label { 
-    display: block; 
-    margin: 0.8rem 0 0.4rem; 
-    color: var(--fg); 
-    font-weight: 500; 
-  }
-
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin: 1rem 0;
-    cursor: pointer;
-    font-weight: normal;
-  }
-
-  .checkbox-label input[type="checkbox"],
-  .checkbox-label input[type="radio"] {
-    width: auto;
-    margin: 0;
-    cursor: pointer;
-  }
-
-  input, textarea, select {
-    width: 100%;
-    padding: 1rem;
-    background: #0f0c09;
-    color: var(--fg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: inherit;
-    margin: 0.5rem 0 0;
-  }
-
-  input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(227, 176, 75, 0.3);
-  }
-
-  .subsection {
-    background: #211a14;
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin-top: 1rem;
-    border: 1px solid var(--border);
-  }
-
-  .hidden { 
-    display: none; 
-  }
-
-  .center { 
-    text-align: center; 
-    margin-top: 2rem; 
-  }
-
-  .btn-submit {
-    background: var(--accent);
-    color: #1a1410;
-    padding: 1.2rem 3rem;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 0 20px rgba(227, 176, 75, 0.3);
-  }
-
-  .btn-submit:hover {
-    background: var(--accent-soft);
-    transform: translateY(-3px);
-    box-shadow: 0 0 30px rgba(227, 176, 75, 0.5);
-  }
-
-  small {
-    color: var(--subtle);
-    font-size: 0.85rem;
-  }
-</style>
 {% endblock %}
