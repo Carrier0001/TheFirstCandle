@@ -1,6 +1,61 @@
+# docker-compose.yml
 version: "3.9"
 
 services:
+  # ==================== CORE SERVICES ====================
+  
+  # Primary API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: vow_api
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debugger
+    environment:
+      - DATABASE_URL=postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
+      - DATABASE_TYPE=postgresql
+      - SQLITE_PATH=/data/ledger_cache.db
+      - JWT_SECRET=${JWT_SECRET}
+      - PHONE_SALT=${PHONE_SALT}
+      - IP_SALT=${IP_SALT}
+      - ENVIRONMENT=development
+      - PYTHONUNBUFFERED=1
+      - TOR_PROXY=socks5://tor:9050
+      - IPFS_GATEWAY=http://ipfs:5001
+      - PEER_NODES=${PEER_NODES:-}
+      - NODE_ID=${NODE_ID:-node_1}
+      - JURISDICTION=${JURISDICTION:-unknown}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ipfs:
+        condition: service_started
+      tor:
+        condition: service_started
+    volumes:
+      - ./app:/app/app
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./data:/data
+      - ./scripts:/scripts
+    networks:
+      - vow_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL (Local cache, not source of truth)
   postgres:
     image: postgres:15-alpine
     container_name: vow_postgres
@@ -8,12 +63,13 @@ services:
       POSTGRES_DB: vow
       POSTGRES_USER: vow
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-    # ⚠️ IMPORTANT: Database port is HIDDEN for security
-    # ports:
-    #   - "5432:5432"
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - vow_network
+    # No exposed ports - internal only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U vow"]
       interval: 10s
@@ -22,43 +78,221 @@ services:
     secrets:
       - db_password
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  api:
+  # ==================== DISTRIBUTION LAYER ====================
+  
+  # IPFS Node - Content Addressed Storage
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: vow_ipfs
+    ports:
+      - "4001:4001"      # P2P (expose to network)
+      # - "5001:5001"    # API (keep internal)
+      # - "8080:8080"    # Gateway (keep internal)
+    volumes:
+      - ipfs_data:/data/ipfs
+      - ./config/ipfs:/container-init.d/:ro
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_LOGGING=error
+    networks:
+      - vow_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Tor Hidden Service - Anonymous Gateway
+  tor:
+    image: torproject/tor:latest
+    container_name: vow_tor
+    volumes:
+      - ./config/tor/torrc:/etc/tor/torrc:ro
+      - tor_data:/var/lib/tor
+      - tor_logs:/var/log/tor
+    networks:
+      - vow_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "tor", "--verify-config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== SYNC & BACKUP ====================
+  
+  # Git Sync - Mirror to Public Repositories
+  git-sync:
+    image: alpine/git:latest
+    container_name: vow_git_sync
+    volumes:
+      - ./data/ledger_json:/repo
+      - ./secrets/git_ssh:/root/.ssh
+    environment:
+      - GIT_REPO=${GIT_MIRROR_URL:-https://github.com/vow-ledger/mirror.git}
+      - GIT_BRANCH=main
+      - SYNC_INTERVAL=${GIT_SYNC_INTERVAL:-300}
+      - GIT_USERNAME=${GIT_USERNAME:-vow-ledger}
+      - GIT_EMAIL=${GIT_EMAIL:-bot@vow.ledger}
+    networks:
+      - vow_network
+    command: |
+      sh -c "
+      apk add --no-cache openssh-client rsync
+      mkdir -p ~/.ssh
+      chmod 700 ~/.ssh
+      
+      while true; do
+        cd /repo
+        git config user.name \"\$GIT_USERNAME\"
+        git config user.email \"\$GIT_EMAIL\"
+        
+        # Add and commit changes
+        git add .
+        git commit -m \"Auto-sync \$(date -u +%Y-%m-%dT%H:%M:%SZ)\" || true
+        
+        # Push to remote
+        git push \$GIT_REPO \$GIT_BRANCH || true
+        
+        sleep \$SYNC_INTERVAL
+      done
+      "
+    restart: unless-stopped
+
+  # Litestream - SQLite to S3 Backup (if using SQLite mode)
+  litestream:
+    image: litestream/litestream:latest
+    container_name: vow_litestream
+    volumes:
+      - ./data:/data
+    environment:
+      - LITESTREAM_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - LITESTREAM_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - LITESTREAM_REGION=${AWS_REGION:-us-east-1}
+      - LITESTREAM_REPLICA_URL=${LITESTREAM_REPLICA_URL}
+    command: |
+      sh -c "
+      cat > /etc/litestream.yml << EOF
+      dbs:
+        - path: /data/ledger_cache.db
+          replicas:
+            - url: \$LITESTREAM_REPLICA_URL
+              sync-interval: 1m
+      EOF
+      litestream replicate -config /etc/litestream.yml
+      "
+    restart: unless-stopped
+
+  # ==================== MONITORING ====================
+  
+  # Prometheus Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vow_prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - vow_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: unless-stopped
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vow_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - vow_network
+    restart: unless-stopped
+
+  # ==================== BACKGROUND WORKERS ====================
+  
+  # Jury Worker - Processes pending submissions
+  jury-worker:
     build:
       context: .
-      dockerfile: Dockerfile.production   # Use the secure one we made
-    container_name: vow_api
-    ports:
-      - "8000:8000"
+      dockerfile: Dockerfile
+      target: worker
+    container_name: vow_jury_worker
     environment:
-      DATABASE_URL: postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
-      JWT_SECRET: ${JWT_SECRET}
-      PHONE_SALT: ${PHONE_SALT}
-      IP_SALT: ${IP_SALT}
-      ENVIRONMENT: development
-      PYTHONUNBUFFERED: 1
+      - DATABASE_URL=postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
+      - JWT_SECRET=${JWT_SECRET}
+      - WORKER_TYPE=jury
+      - POLL_INTERVAL=10
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
+      - api
     volumes:
-      - ./evidence:/app/evidence
-      - ./templates:/app/templates
-      - ./static:/app/static
+      - ./app:/app/app
+      - ./data:/data
+    networks:
+      - vow_network
     restart: unless-stopped
-    # Security: Resource limits
     deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
+      replicas: 2
 
+  # Aggregation Worker - Recalculates metrics
+  agg-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    container_name: vow_agg_worker
+    environment:
+      - DATABASE_URL=postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
+      - WORKER_TYPE=aggregation
+      - RECALCULATE_INTERVAL=3600
+    depends_on:
+      - postgres
+    volumes:
+      - ./app:/app/app
+      - ./data:/data
+    networks:
+      - vow_network
+    restart: unless-stopped
+
+# ==================== NETWORKS ====================
+networks:
+  vow_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==================== VOLUMES ====================
 volumes:
   postgres_data:
+    driver: local
+  ipfs_data:
+    driver: local
+  tor_data:
+    driver: local
+  tor_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
 
-# ====================== SECRETS ======================
+# ==================== SECRETS ====================
 secrets:
   db_password:
     file: ./secrets/db_password.txt
