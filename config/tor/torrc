@@ -1,1 +1,28 @@
 
+# config/tor/torrc
+
+# Hidden Service for anonymous submission
+HiddenServiceDir /var/lib/tor/vow_ledger/
+HiddenServicePort 80 api:8000
+HiddenServiceVersion 3
+
+# Exit policy - relay only, no exit
+ExitRelay 0
+
+# Reduce logging
+Log notice file /var/log/tor/notices.log
+
+# Security
+SocksPort 0.0.0.0:9050
+SocksPolicy accept 172.20.0.0/16
+SocksPolicy reject *
+
+# Rate limiting for DoS protection
+HiddenServiceMaxStreams 100
+HiddenServiceMaxStreamsCloseCircuit 1
+
+# Enable DoS protection
+DoSCircuitCreationEnabled 1
+DoSCircuitCreationMinSpeed 2000
+DoSCircuitCreationRate 4
+DoSCircuitCreationBurst 8
