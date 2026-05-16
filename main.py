@@ -6,6 +6,9 @@ from fastapi.templating import Jinja2Templates
 from app.core.database import lifespan
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
 
+os.makedirs("static", exist_ok=True)
+os.makedirs("templates", exist_ok=True)
+
 app = FastAPI(
     title="The Vow Ledger v1.0",
     description="Permanent truth ledger with jury consensus and smart aggregation",
