@@ -1,1 +1,20 @@
 
+# config/prometheus/prometheus.yml
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'vow_api'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/metrics'
+  
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:9187']
+  
+  - job_name: 'ipfs'
+    static_configs:
+      - targets: ['ipfs:5001']
