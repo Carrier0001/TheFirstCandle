@@ -1,146 +1,61 @@
-﻿version: '3.9'
+﻿# docker-compose.production.yml
+version: "3.9"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: vow_postgres
-    environment:
-      POSTGRES_DB: vow
-      POSTGRES_USER: vow
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    secrets:
-      - db_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./schema_v1.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-      - ./backups:/backups
-    networks:
-      - vow_internal
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vow"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    # read_only must be false for Postgres
-    read_only: false
-    tmpfs:
-      - /tmp
-      - /var/run/postgresql
-
   api:
     build:
       context: .
-      dockerfile: Dockerfile.production
-    container_name: vow_api
-    ports:
-      - "127.0.0.1:8000:8000"   # Only accessible via nginx
+      dockerfile: Dockerfile
+      target: production
     environment:
-      DATABASE_URL: postgresql://vow@postgres:5432/vow
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
-      PHONE_SALT_FILE: /run/secrets/phone_salt
-      IP_SALT_FILE: /run/secrets/ip_salt
-      ENVIRONMENT: production
-      PYTHONUNBUFFERED: 1
-      PYTHONDONTWRITEBYTECODE: 1
-    secrets:
-      - db_password
-      - jwt_secret
-      - phone_salt
-      - ip_salt
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - evidence_storage:/app/evidence:rw
-      - ./templates:/app/templates:ro
-      - ./static:/app/static:ro
-    networks:
-      - vow_internal
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE
+      - ENVIRONMENT=production
+      - LOG_LEVEL=WARNING
+      - RATE_LIMIT_ENABLED=true
+      - SUBMISSION_COOLDOWN=3600
+      - MAX_REQUESTS_PER_IP=100
     deploy:
+      mode: replicated
+      replicas: 3
       resources:
         limits:
-          cpus: '2'
-          memory: 2G
+          cpus: '4'
+          memory: 4G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vow.rule=Host(`api.vow.ledger`)"
+      - "traefik.http.services.vow.loadbalancer.server.port=8000"
 
-  backup:
-    image: postgres:15-alpine
-    container_name: vow_backup
-    secrets:
-      - db_password
-    environment:
-      PGHOST: postgres
-      PGUSER: vow
-      PGDATABASE: vow
-    volumes:
-      - ./backups:/backups
-      - postgres_data:/var/lib/postgresql/data:ro
-    networks:
-      - vow_internal
-    command: >
-      sh -c "while true; do
-        echo '[Backup] Starting at $$(date)';
-        PGPASSWORD=$$(cat /run/secrets/db_password) pg_dump -U vow -Fc -d vow > /backups/vow_$$(date +%Y%m%d_%H%M%S).dump;
-        find /backups -name '*.dump' -mtime +7 -delete;
-        echo '[Backup] Completed at $$(date)';
-        sleep 86400;
-      done"
-    restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    container_name: vow_nginx
+  # Load Balancer
+  traefik:
+    image: traefik:v3.0
+    container_name: vow_traefik
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./static:/usr/share/nginx/html/static:ro
-      - nginx_cache:/var/cache/nginx
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./config/traefik/certs:/certs
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
     networks:
-      - vow_internal
-    depends_on:
-      - api
+      - vow_network
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-  jwt_secret:
-    file: ./secrets/jwt_secret.txt
-  phone_salt:
-    file: ./secrets/phone_salt.txt
-  ip_salt:
-    file: ./secrets/ip_salt.txt
-
-volumes:
-  postgres_data:
-  evidence_storage:
-  nginx_cache:
 
 networks:
-  vow_internal:
-    driver: bridge
-    internal: true
+  vow_network:
+    external: true
