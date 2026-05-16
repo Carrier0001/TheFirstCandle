@@ -111,7 +111,7 @@ services:
 
   # Tor Hidden Service - Anonymous Gateway
   tor:
-    image: torproject/tor:latest
+    image: dperson/torproxy:latest
     container_name: vow_tor
     volumes:
       - ./config/tor/torrc:/etc/tor/torrc:ro
@@ -231,7 +231,6 @@ services:
       context: .
       dockerfile: Dockerfile
       target: worker
-    container_name: vow_jury_worker
     environment:
       - DATABASE_URL=postgresql://vow:${DB_PASSWORD}@postgres:5432/vow
       - JWT_SECRET=${JWT_SECRET}
@@ -246,8 +245,7 @@ services:
     networks:
       - vow_network
     restart: unless-stopped
-    deploy:
-      replicas: 2
+
 
   # Aggregation Worker - Recalculates metrics
   agg-worker:

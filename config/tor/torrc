@@ -21,8 +21,3 @@ SocksPolicy reject *
 HiddenServiceMaxStreams 100
 HiddenServiceMaxStreamsCloseCircuit 1
 
-# Enable DoS protection
-DoSCircuitCreationEnabled 1
-DoSCircuitCreationMinSpeed 2000
-DoSCircuitCreationRate 4
-DoSCircuitCreationBurst 8
