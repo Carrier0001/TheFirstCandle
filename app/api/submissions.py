@@ -30,6 +30,7 @@ async def submit_testimony(
     financial_loss: float = Form(default=0.0),
     ecosystem_loss: str = Form(default=None),
     num_victims: int = Form(default=0),
+    evidence_links: str = Form(default=None),  # ← ADD THIS LINE
     background_tasks: BackgroundTasks = None,
     files: List[UploadFile] = File(default=[]),
     x_submitter_pubkey: str = Header(default="test-submitter")
@@ -87,20 +88,19 @@ async def submit_testimony(
             if existing:
                 raise HTTPException(status_code=409, detail="Duplicate submission detected")
 
-            result = await conn.fetchrow("""
-                INSERT INTO submissions (
-                    submission_id, submission_hash, entity_id, entity_name, title, description,
-                    incident_country, incident_state, incident_city, incident_year,
-                    life_loss_submitted, financial_loss_submitted, ecosystem_loss_submitted,
-                    num_victims_submitted, submitter_pubkey_hash, client_ip_hash, status
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'PENDING_JURY')
-                RETURNING submission_id, submission_hash, entity_id, status, received_at
-            """, submission_id, submission_hash, body.entity_id, body.entity_name,
-                body.title, body.description, body.incident_country,
-                body.incident_state, body.incident_city, body.incident_year,
-                body.life_loss, body.financial_loss, body.ecosystem_loss,
-                body.num_victims, submitter_hash, hash_ip_subnet(client_ip))
-
+result = await conn.fetchrow("""
+    INSERT INTO submissions (
+        submission_id, submission_hash, entity_id, entity_name, title, description,
+        incident_country, incident_state, incident_city, incident_year,
+        life_loss_submitted, financial_loss_submitted, ecosystem_loss_submitted,
+        num_victims_submitted, submitter_pubkey_hash, client_ip_hash, status, evidence_links
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'PENDING_JURY', $17)
+    RETURNING submission_id, submission_hash, entity_id, status, received_at
+""", submission_id, submission_hash, body.entity_id, body.entity_name,
+    body.title, body.description, body.incident_country,
+    body.incident_state, body.incident_city, body.incident_year,
+    body.life_loss, body.financial_loss, body.ecosystem_loss,
+    body.num_victims, submitter_hash, hash_ip_subnet(client_ip), evidence_links)
             # Insert evidence files in same transaction
             if evidence_files:
                 for f in evidence_files:
