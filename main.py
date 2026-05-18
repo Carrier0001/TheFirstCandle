@@ -1,11 +1,12 @@
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.database import lifespan
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
-from app.core.database import db_pool  # Add this import
+from app.core.database import db_pool
+from datetime import datetime
 
 os.makedirs("static", exist_ok=True)
 os.makedirs("templates", exist_ok=True)
@@ -38,10 +39,9 @@ app.include_router(evidence.router)
 app.include_router(jury.router)
 app.include_router(admin.router)
 
+# ==================== PUBLIC LEDGER (HOME) ====================
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
-    from datetime import datetime
-    
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT 
@@ -76,6 +76,110 @@ async def root(request: Request):
         "entities": entities,
         "current_date": datetime.now().strftime("%B %d, %Y")
     })
+
+# ==================== ENTITY DETAIL PAGE ====================
+@app.get("/entity/{entity_id}", include_in_schema=False)
+async def entity_page(request: Request, entity_id: str):
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT 
+                submission_id,
+                entity_id,
+                entity_name,
+                title,
+                description,
+                incident_year as year,
+                life_loss_submitted as harm_ly,
+                financial_loss_submitted as harm_ecy,
+                status,
+                created_at,
+                evidence_links,
+                intent_type,
+                confidence
+            FROM submissions 
+            WHERE entity_id = $1 AND status = 'APPROVED'
+            ORDER BY incident_year DESC
+        """, entity_id)
+        
+        if not rows:
+            raise HTTPException(status_code=404, detail="Entity not found")
+        
+        entity_data = {
+            "entity_id": entity_id,
+            "entity_name": rows[0]['entity_name'],
+            "entity_state": "ACTIVE",
+            "measurement_date": datetime.now().strftime("%Y-%m-%d"),
+            "entries": [],
+            "aggregated_entries": []
+        }
+        
+        for row in rows:
+            entity_data["entries"].append({
+                "entry_id": row['submission_id'],
+                "year": row['year'],
+                "description": row['description'],
+                "harm_ly": row['harm_ly'] or 0,
+                "harm_ecy": row['harm_ecy'] or 0,
+                "intent_type": row['intent_type'] or "NEGLIGENCE",
+                "confidence": row['confidence'] or "MEDIUM",
+                "evidence_hashes": [row['evidence_links']] if row['evidence_links'] else []
+            })
+    
+    return templates.TemplateResponse("entity.html", {
+        "request": request,
+        "entity": entity_data
+    })
+
+# ==================== INDIVIDUAL ENTRY PAGE ====================
+@app.get("/entity/{entity_id}/entry/{entry_id}", include_in_schema=False)
+async def entry_page(request: Request, entity_id: str, entry_id: str):
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            SELECT 
+                submission_id,
+                entity_id,
+                entity_name,
+                title,
+                description,
+                incident_year as year,
+                life_loss_submitted as harm_ly,
+                financial_loss_submitted as harm_ecy,
+                status,
+                created_at,
+                evidence_links,
+                intent_type,
+                confidence
+            FROM submissions 
+            WHERE entity_id = $1 AND submission_id = $2 AND status = 'APPROVED'
+        """, entity_id, entry_id)
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        
+        entry_data = {
+            "entry_id": row['submission_id'],
+            "year": row['year'],
+            "description": row['description'],
+            "harm_ly": row['harm_ly'] or 0,
+            "harm_ecy": row['harm_ecy'] or 0,
+            "intent_type": row['intent_type'] or "NEGLIGENCE",
+            "confidence": row['confidence'] or "MEDIUM",
+            "evidence_hashes": [],
+            "external_links": [row['evidence_links']] if row['evidence_links'] else []
+        }
+        
+        entity_data = {
+            "entity_id": row['entity_id'],
+            "entity_name": row['entity_name']
+        }
+    
+    return templates.TemplateResponse("entry.html", {
+        "request": request,
+        "entry": entry_data,
+        "entity": entity_data
+    })
+
+# ==================== INFO PAGES ====================
 @app.get("/info", include_in_schema=False)
 async def info(request: Request):
     return templates.TemplateResponse("info.html", {"request": request})
