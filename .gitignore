@@ -53,6 +53,8 @@ evidence/
 # Logs
 *.log
 logs/
+honeypot_attacks.log
+honeypot_attacks.json
 
 # Docker
 .dockerignore
@@ -62,6 +64,18 @@ Dockerfile.*.local
 # Database
 postgres_data/
 pgdata/
+*.sqlite
+*.sqlite3
+local.db
+test.db
+ledger.db
+
+# Defense system (mirror/sentinel databases - even if you don't have them yet)
+mirror.db
+sentinel.db
+canary_alerts.db
+judgment.db
+probes.db
 
 # Testing & Coverage
 htmlcov/
@@ -81,14 +95,43 @@ cover/
 *.swo
 *~
 
-# Project Specific
-# (Add more as you create them)
-docker-compose.override.yml
-*.local.yml
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.cab
+*.msi
+*.msm
+*.msp
 
-# Temporary / Development only
+# IPFS
+.ipfs/
+ipfs.txt
+*.torrent
+
+# Arweave (critical - contains private keys)
+*wallet*.json
+*.arweave*
+.arweave_wallet.json
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
 static/uploads/
 temp/
+
+# Sentry / Monitoring
+.sentry/
+
+# Project Specific
+docker-compose.override.yml
+*.local.yml
 
 # Keep these (you probably want to commit them)
 # !docker-compose.yml
