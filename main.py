@@ -43,8 +43,8 @@ app.include_router(admin.router)
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
     from datetime import datetime
-    
-    if db_pool is None:
+    from app.core.database import db_pool
+if db_pool is None or not hasattr(db_pool, 'acquire'):
         return templates.TemplateResponse("index.html", {
             "request": request,
             "entities": [],
