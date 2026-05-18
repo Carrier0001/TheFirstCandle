@@ -89,6 +89,9 @@ async def root(request: Request):
 # ==================== ENTITY DETAIL PAGE ====================
 @app.get("/entity/{entity_id}", include_in_schema=False)
 async def entity_page(request: Request, entity_id: str):
+    if db_pool is None:
+        raise HTTPException(status_code=503, detail="Database initializing, please refresh")
+    
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT 
@@ -142,6 +145,9 @@ async def entity_page(request: Request, entity_id: str):
 # ==================== INDIVIDUAL ENTRY PAGE ====================
 @app.get("/entity/{entity_id}/entry/{entry_id}", include_in_schema=False)
 async def entry_page(request: Request, entity_id: str, entry_id: str):
+    if db_pool is None:
+        raise HTTPException(status_code=503, detail="Database initializing, please refresh")
+    
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("""
             SELECT 
