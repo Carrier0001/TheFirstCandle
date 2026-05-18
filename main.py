@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.database import lifespan
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
+from app.core.database import db_pool  # Add this import
 
 os.makedirs("static", exist_ok=True)
 os.makedirs("templates", exist_ok=True)
@@ -38,7 +39,21 @@ app.include_router(admin.router)
 
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    # Fetch approved submissions from database
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT submission_id, entity_name, title, description, 
+                   incident_country, incident_year, created_at, received_at,
+                   life_loss_submitted, financial_loss_submitted, evidence_links
+            FROM submissions 
+            WHERE status = 'APPROVED'
+            ORDER BY received_at DESC
+            LIMIT 50
+        """)
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "entries": rows
+    })
 
 @app.get("/info", include_in_schema=False)
 async def info(request: Request):
