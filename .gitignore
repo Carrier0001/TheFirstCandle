@@ -34,7 +34,7 @@ env/
 venv/
 ENV/
 
-# Secrets & Sensitive Data (VERY IMPORTANT)
+# Secrets & Sensitive Data (IMPORTANT)
 secrets/
 *.pem
 *.key
@@ -70,7 +70,7 @@ local.db
 test.db
 ledger.db
 
-# Defense system (mirror/sentinel databases - even if you don't have them yet)
+# Defense system
 mirror.db
 sentinel.db
 canary_alerts.db
@@ -113,7 +113,7 @@ Thumbs.db
 ipfs.txt
 *.torrent
 
-# Arweave (critical - contains private keys)
+# Arweave (critical)
 *wallet*.json
 *.arweave*
 .arweave_wallet.json
@@ -133,7 +133,7 @@ temp/
 docker-compose.override.yml
 *.local.yml
 
-# Keep these (you probably want to commit them)
+# Keep these 
 # !docker-compose.yml
 # !Dockerfile
 # !Dockerfile.production
