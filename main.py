@@ -30,6 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Helper function to check database readiness
+def is_db_ready():
+    return db_pool is not None and hasattr(db_pool, 'acquire')
+
 # Include API routers
 app.include_router(health.router)
 app.include_router(submissions.router)
@@ -42,13 +46,12 @@ app.include_router(admin.router)
 # ==================== PUBLIC LEDGER (HOME) ====================
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
-    from datetime import datetime
-    from app.core.database import db_pool
-if db_pool is None or not hasattr(db_pool, 'acquire'):
+    if not is_db_ready():
         return templates.TemplateResponse("index.html", {
             "request": request,
             "entities": [],
-            "current_date": datetime.now().strftime("%B %d, %Y")
+            "current_date": datetime.now().strftime("%B %d, %Y"),
+            "db_status": "initializing"
         })
     
     async with db_pool.acquire() as conn:
@@ -89,8 +92,19 @@ if db_pool is None or not hasattr(db_pool, 'acquire'):
 # ==================== ENTITY DETAIL PAGE ====================
 @app.get("/entity/{entity_id}", include_in_schema=False)
 async def entity_page(request: Request, entity_id: str):
-    if db_pool is None:
-        raise HTTPException(status_code=503, detail="Database initializing, please refresh")
+    if not is_db_ready():
+        return templates.TemplateResponse("entity.html", {
+            "request": request,
+            "entity": {
+                "entity_id": entity_id,
+                "entity_name": "Loading...",
+                "entity_state": "PENDING",
+                "measurement_date": datetime.now().strftime("%Y-%m-%d"),
+                "entries": [],
+                "aggregated_entries": []
+            },
+            "db_status": "initializing"
+        })
     
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
@@ -145,7 +159,7 @@ async def entity_page(request: Request, entity_id: str):
 # ==================== INDIVIDUAL ENTRY PAGE ====================
 @app.get("/entity/{entity_id}/entry/{entry_id}", include_in_schema=False)
 async def entry_page(request: Request, entity_id: str, entry_id: str):
-    if db_pool is None:
+    if not is_db_ready():
         raise HTTPException(status_code=503, detail="Database initializing, please refresh")
     
     async with db_pool.acquire() as conn:
