@@ -42,6 +42,15 @@ app.include_router(admin.router)
 # ==================== PUBLIC LEDGER (HOME) ====================
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
+    from datetime import datetime
+    
+    if db_pool is None:
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "entities": [],
+            "current_date": datetime.now().strftime("%B %d, %Y")
+        })
+    
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT 
