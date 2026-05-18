@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.database import lifespan
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
-from app.core.database import db_pool
+from app.core import database  # Import the module, not the variable
 from datetime import datetime
 
 os.makedirs("static", exist_ok=True)
@@ -32,7 +32,7 @@ app.add_middleware(
 
 # Helper function to check database readiness
 def is_db_ready():
-    return db_pool is not None and hasattr(db_pool, 'acquire')
+    return database.db_pool is not None and hasattr(database.db_pool, 'acquire')
 
 # Include API routers
 app.include_router(health.router)
@@ -50,11 +50,10 @@ async def root(request: Request):
         return templates.TemplateResponse("index.html", {
             "request": request,
             "entities": [],
-            "current_date": datetime.now().strftime("%B %d, %Y"),
-            "db_status": "initializing"
+            "current_date": datetime.now().strftime("%B %d, %Y")
         })
     
-    async with db_pool.acquire() as conn:
+    async with database.db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT 
                 entity_id,
@@ -102,11 +101,10 @@ async def entity_page(request: Request, entity_id: str):
                 "measurement_date": datetime.now().strftime("%Y-%m-%d"),
                 "entries": [],
                 "aggregated_entries": []
-            },
-            "db_status": "initializing"
+            }
         })
     
-    async with db_pool.acquire() as conn:
+    async with database.db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT 
                 submission_id,
@@ -162,7 +160,7 @@ async def entry_page(request: Request, entity_id: str, entry_id: str):
     if not is_db_ready():
         raise HTTPException(status_code=503, detail="Database initializing, please refresh")
     
-    async with db_pool.acquire() as conn:
+    async with database.db_pool.acquire() as conn:
         row = await conn.fetchrow("""
             SELECT 
                 submission_id,
