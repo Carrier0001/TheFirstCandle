@@ -19,6 +19,7 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+templates.env.filters['comma_format'] = lambda x: f"{int(x):,}" if x else "0"
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,22 +40,42 @@ app.include_router(admin.router)
 
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
-    # Fetch approved submissions from database
+    from datetime import datetime
+    
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT submission_id, entity_name, title, description, 
-                   incident_country, incident_year, created_at, received_at,
-                   life_loss_submitted, financial_loss_submitted, evidence_links
+            SELECT 
+                entity_id,
+                entity_name,
+                COUNT(*) as total_entries,
+                SUM(life_loss_submitted) as total_harm_ly,
+                SUM(financial_loss_submitted) as total_harm_ecy,
+                MAX(created_at) as last_entry
             FROM submissions 
             WHERE status = 'APPROVED'
-            ORDER BY received_at DESC
-            LIMIT 50
+            GROUP BY entity_id, entity_name
+            ORDER BY total_harm_ly ASC
         """)
+        
+        entities = []
+        for row in rows:
+            entities.append({
+                "entity_id": row['entity_id'],
+                "entity_name": row['entity_name'],
+                "lifetime": {
+                    "outstanding_ly": abs(row['total_harm_ly'] or 0),
+                    "outstanding_ecy": abs(row['total_harm_ecy'] or 0)
+                },
+                "total_entries": row['total_entries'],
+                "measurement_date": row['last_entry'].strftime("%Y-%m-%d") if row['last_entry'] else datetime.now().strftime("%Y-%m-%d"),
+                "has_systemic": False
+            })
+    
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "entries": rows
+        "entities": entities,
+        "current_date": datetime.now().strftime("%B %d, %Y")
     })
-
 @app.get("/info", include_in_schema=False)
 async def info(request: Request):
     return templates.TemplateResponse("info.html", {"request": request})
