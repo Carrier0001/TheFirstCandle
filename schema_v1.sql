@@ -3,7 +3,7 @@
 -- ============================================================
 
 -- Connect to the new database
-\c vow
+-- \c vow
 
 -- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

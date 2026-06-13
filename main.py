@@ -2,10 +2,11 @@ import os
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from app.core.database import lifespan
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
-from app.core import database  # Import the module, not the variable
+from app.core import database
 from datetime import datetime
 
 os.makedirs("static", exist_ok=True)
@@ -19,8 +20,20 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
-templates.env.filters['comma_format'] = lambda x: f"{int(x):,}" if x else "0"
+
+# ==================== RAW JINJA2 (NO STARLETTE CACHE) ====================
+jinja_env = Environment(
+    loader=FileSystemLoader("templates"),
+    autoescape=select_autoescape(["html", "xml"]),
+    cache_size=0,
+    auto_reload=True
+)
+jinja_env.filters['comma_format'] = lambda x: f"{int(x):,}" if x else "0"
+
+def render(template_name: str, request: Request, **context):
+    template = jinja_env.get_template(template_name)
+    context["request"] = request
+    return HTMLResponse(template.render(**context))
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,11 +43,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Helper function to check database readiness
 def is_db_ready():
     return database.db_pool is not None and hasattr(database.db_pool, 'acquire')
 
-# Include API routers
 app.include_router(health.router)
 app.include_router(submissions.router)
 app.include_router(entities.router)
@@ -43,15 +54,20 @@ app.include_router(evidence.router)
 app.include_router(jury.router)
 app.include_router(admin.router)
 
+# ==================== TEST ROUTE ====================
+@app.get("/test")
+async def test_page(request: Request):
+    if not is_db_ready():
+        return HTMLResponse("Database not ready", status_code=503)
+    async with database.db_pool.acquire() as conn:
+        count = await conn.fetchval("SELECT COUNT(*) FROM submissions")
+    return render("minimal.html", request, entity_count=count)
+
 # ==================== PUBLIC LEDGER (HOME) ====================
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
     if not is_db_ready():
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "entities": [],
-            "current_date": datetime.now().strftime("%B %d, %Y")
-        })
+        return render("index.html", request, entities=[], current_date=datetime.now().strftime("%B %d, %Y"))
     
     async with database.db_pool.acquire() as conn:
         rows = await conn.fetch("""
@@ -61,7 +77,7 @@ async def root(request: Request):
                 COUNT(*) as total_entries,
                 SUM(life_loss_submitted) as total_harm_ly,
                 SUM(financial_loss_submitted) as total_harm_ecy,
-                MAX(created_at) as last_entry
+                MAX(received_at) as last_entry
             FROM submissions 
             WHERE status = 'APPROVED'
             GROUP BY entity_id, entity_name
@@ -82,26 +98,19 @@ async def root(request: Request):
                 "has_systemic": False
             })
     
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "entities": entities,
-        "current_date": datetime.now().strftime("%B %d, %Y")
-    })
+    return render("index.html", request, entities=entities, current_date=datetime.now().strftime("%B %d, %Y"))
 
 # ==================== ENTITY DETAIL PAGE ====================
 @app.get("/entity/{entity_id}", include_in_schema=False)
 async def entity_page(request: Request, entity_id: str):
     if not is_db_ready():
-        return templates.TemplateResponse("entity.html", {
-            "request": request,
-            "entity": {
-                "entity_id": entity_id,
-                "entity_name": "Loading...",
-                "entity_state": "PENDING",
-                "measurement_date": datetime.now().strftime("%Y-%m-%d"),
-                "entries": [],
-                "aggregated_entries": []
-            }
+        return render("entity.html", request, entity={
+            "entity_id": entity_id,
+            "entity_name": "Loading...",
+            "entity_state": "PENDING",
+            "measurement_date": datetime.now().strftime("%Y-%m-%d"),
+            "entries": [],
+            "aggregated_entries": []
         })
     
     async with database.db_pool.acquire() as conn:
@@ -116,7 +125,7 @@ async def entity_page(request: Request, entity_id: str):
                 life_loss_submitted as harm_ly,
                 financial_loss_submitted as harm_ecy,
                 status,
-                created_at,
+                received_at,
                 evidence_links,
                 intent_type,
                 confidence
@@ -149,10 +158,7 @@ async def entity_page(request: Request, entity_id: str):
                 "evidence_hashes": [row['evidence_links']] if row['evidence_links'] else []
             })
     
-    return templates.TemplateResponse("entity.html", {
-        "request": request,
-        "entity": entity_data
-    })
+    return render("entity.html", request, entity=entity_data)
 
 # ==================== INDIVIDUAL ENTRY PAGE ====================
 @app.get("/entity/{entity_id}/entry/{entry_id}", include_in_schema=False)
@@ -172,7 +178,7 @@ async def entry_page(request: Request, entity_id: str, entry_id: str):
                 life_loss_submitted as harm_ly,
                 financial_loss_submitted as harm_ecy,
                 status,
-                created_at,
+                received_at,
                 evidence_links,
                 intent_type,
                 confidence
@@ -200,29 +206,21 @@ async def entry_page(request: Request, entity_id: str, entry_id: str):
             "entity_name": row['entity_name']
         }
     
-    return templates.TemplateResponse("entry.html", {
-        "request": request,
-        "entry": entry_data,
-        "entity": entity_data
-    })
+    return render("entry.html", request, entry=entry_data, entity=entity_data)
 
 # ==================== INFO PAGES ====================
 @app.get("/info", include_in_schema=False)
 async def info(request: Request):
-    return templates.TemplateResponse("info.html", {"request": request})
+    return render("info.html", request)
 
 @app.get("/methodology", include_in_schema=False)
 async def methodology(request: Request):
-    return templates.TemplateResponse("methodology.html", {"request": request})
+    return render("methodology.html", request)
 
 @app.get("/submit", include_in_schema=False)
 async def submit(request: Request):
-    return templates.TemplateResponse("submit.html", {"request": request})  
+    return render("submit.html", request)  
 
 @app.get("/success", include_in_schema=False)
 async def success(request: Request, submission_id: str = None, entity_name: str = None):
-    return templates.TemplateResponse("submit_success.html", {
-        "request": request,
-        "submission_id": submission_id,
-        "entity_name": entity_name
-    })
+    return render("submit_success.html", request, submission_id=submission_id, entity_name=entity_name)
