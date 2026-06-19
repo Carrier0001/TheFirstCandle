@@ -73,17 +73,26 @@ async def import_data_from_github():
                 content={"error": "Ledger not ready"}
             )
         
+        # GitHub API headers to avoid rate limiting
+        headers = {
+            "User-Agent": "VowLedger-App/1.0",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        
         # GitHub API to get all JSON files
         api_url = "https://api.github.com/repos/Carrier0001/TheFirstCandle/contents/Data"
         
         async with httpx.AsyncClient() as client:
-            # Get list of files
-            response = await client.get(api_url, timeout=30.0)
+            # Get list of files with proper headers
+            response = await client.get(api_url, timeout=30.0, headers=headers)
             
             if response.status_code != 200:
                 return JSONResponse(
                     status_code=response.status_code,
-                    content={"error": f"GitHub API error: {response.status_code}"}
+                    content={
+                        "error": f"GitHub API error: {response.status_code}",
+                        "details": response.text[:200] if response.text else "No details"
+                    }
                 )
             
             files_data = response.json()
@@ -103,8 +112,11 @@ async def import_data_from_github():
             for filename in json_files:
                 try:
                     raw_url = f"https://raw.githubusercontent.com/Carrier0001/TheFirstCandle/main/Data/{filename}"
-                    file_response = await client.get(raw_url, timeout=30.0)
-                    file_response.raise_for_status()
+                    file_response = await client.get(raw_url, timeout=30.0, headers=headers)
+                    
+                    if file_response.status_code != 200:
+                        errors += 1
+                        continue
                     
                     data = file_response.json()
                     
