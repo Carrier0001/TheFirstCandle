@@ -5,5 +5,4 @@ uvicorn
 secrets/ 
 .env 
 *.db 
-data/ 
 backups/ 
