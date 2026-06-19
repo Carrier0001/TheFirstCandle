@@ -525,3 +525,328 @@ async def submit(request: Request):
 @app.get("/success", include_in_schema=False)
 async def success(request: Request, submission_id: str = None, entity_name: str = None):
     return render("submit_success.html", request, submission_id=submission_id, entity_name=entity_name)
+
+# ==================== ADMIN UI ROUTES ====================
+
+# Your admin secret (use environment variable)
+ADMIN_SECRET = os.getenv("ADMIN_SECRET", "admin123")
+
+@app.get("/admin/{secret}/pending")
+async def admin_pending(request: Request, secret: str):
+    """View pending submissions (admin UI)"""
+    
+    # Security check
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    
+    ledger = get_ledger()
+    if not ledger:
+        return render("error.html", request, error="Ledger not ready")
+    
+    # Get all submissions
+    all_submissions = await ledger.get_submissions()
+    
+    # Filter pending ones
+    pending = [s for s in all_submissions if s.get('status') == 'PENDING_JURY']
+    
+    # Format for the template - matches exactly what your template expects
+    formatted_submissions = []
+    for sub in pending:
+        # Get evidence (if stored in submission)
+        evidence_files = []
+        evidence_links = []
+        
+        # Check if evidence is stored in the submission
+        if 'evidence_links' in sub and sub['evidence_links']:
+            if isinstance(sub['evidence_links'], list):
+                evidence_links = sub['evidence_links']
+            elif isinstance(sub['evidence_links'], str):
+                evidence_links = [sub['evidence_links']]
+        
+        formatted_submissions.append({
+            "filename": sub.get('submission_id', ''),
+            "submission_id": sub.get('submission_id', ''),
+            "entity": {
+                "entity_id": sub.get('entity_id', ''),
+                "entity_name": sub.get('entity_name', 'Unknown')
+            },
+            "event": {
+                "year": sub.get('incident_year', 0),
+                "description": sub.get('description', '')
+            },
+            "harm": {
+                "life_loss": sub.get('life_loss', 0),
+                "financial_loss": sub.get('financial_loss', 0)
+            },
+            "evidence": {
+                "files": evidence_files,
+                "links": evidence_links
+            },
+            "received_at": sub.get('created_at', ''),
+            "status": sub.get('status', 'PENDING_JURY')
+        })
+    
+    return render("admin_pending.html", request, 
+                  submissions=formatted_submissions,
+                  secret=secret)
+
+@app.get("/admin/{secret}/review/{submission_id}")
+async def admin_review(request: Request, secret: str, submission_id: str):
+    """View a single pending submission for review"""
+    
+    # Security check
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    
+    ledger = get_ledger()
+    if not ledger:
+        return render("error.html", request, error="Ledger not ready")
+    
+    submission = await ledger.get_submission(submission_id)
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get('status') != 'PENDING_JURY':
+        raise HTTPException(status_code=400, detail="Submission is not pending")
+    
+    # Get evidence
+    evidence_files = []
+    evidence_links = []
+    
+    if 'evidence_links' in submission and submission['evidence_links']:
+        if isinstance(submission['evidence_links'], list):
+            evidence_links = submission['evidence_links']
+        elif isinstance(submission['evidence_links'], str):
+            evidence_links = [submission['evidence_links']]
+    
+    # Format for the template - matches exactly what your review template expects
+    formatted = {
+        "filename": submission.get('submission_id', ''),
+        "submission_id": submission.get('submission_id', ''),
+        "entity": {
+            "entity_id": submission.get('entity_id', ''),
+            "entity_name": submission.get('entity_name', 'Unknown')
+        },
+        "event": {
+            "year": submission.get('incident_year', 0),
+            "description": submission.get('description', '')
+        },
+        "harm": {
+            "life_loss": submission.get('life_loss', 0),
+            "financial_loss": submission.get('financial_loss', 0),
+            "ecosystem_loss": 0
+        },
+        "surplus": {
+            "life_saved": 0,
+            "financial_surplus": 0,
+            "ecosystem_surplus": 0
+        },
+        "intent_type": "NEGLIGENCE",
+        "evidence": {
+            "files": evidence_files,
+            "links": evidence_links
+        },
+        "received_at": submission.get('created_at', ''),
+        "status": submission.get('status', 'PENDING_JURY')
+    }
+    
+    return render("admin_review.html", request, 
+                  submission=formatted,
+                  secret=secret)
+
+@app.post("/admin/{secret}/approve/{submission_id}")
+async def admin_approve(request: Request, secret: str, submission_id: str):
+    """Approve a submission and inscribe it in the ledger"""
+    
+    # Security check
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    
+    ledger = get_ledger()
+    if not ledger:
+        return render("error.html", request, error="Ledger not ready")
+    
+    # Get form data
+    form = await request.form()
+    
+    # Get current submission
+    submission = await ledger.get_submission(submission_id)
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get('status') != 'PENDING_JURY':
+        raise HTTPException(status_code=400, detail="Submission is not pending")
+    
+    # Update with form data
+    import sqlite3
+    db_path = Path("./ledger/ledger.db")
+    
+    if not db_path.exists():
+        return render("error.html", request, error="Database not found")
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Get updated values from form
+    life_loss = int(form.get("life", submission.get('life_loss', 0)) or 0)
+    financial_loss = float(form.get("financial", submission.get('financial_loss', 0)) or 0)
+    ecosystem_loss = float(form.get("ecosystem", 0) or 0)
+    intent_type = form.get("intent_type", "NEGLIGENCE")
+    flag_spam = "flag_spam" in form
+    
+    # Update the submission
+    cursor.execute("""
+        UPDATE submissions 
+        SET life_loss = ?,
+            financial_loss = ?,
+            intent_type = ?,
+            status = 'APPROVED'
+        WHERE submission_id = ?
+    """, (life_loss, financial_loss, intent_type, submission_id))
+    
+    conn.commit()
+    conn.close()
+    
+    # Get updated submission
+    updated = await ledger.get_submission(submission_id)
+    
+    # Redirect back to pending list with success message
+    return HTMLResponse(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ background: #1a1410; color: #f4efe8; font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+            .message {{ text-align: center; }}
+            .message h1 {{ color: #e3b04b; font-size: 3rem; }}
+            .message p {{ color: #cbbfae; font-size: 1.2rem; }}
+            .message a {{ color: #e3b04b; text-decoration: none; border: 1px solid #e3b04b; padding: 0.8rem 2rem; border-radius: 8px; display: inline-block; margin-top: 1.5rem; }}
+            .message a:hover {{ background: #e3b04b; color: #1a1410; }}
+        </style>
+    </head>
+    <body>
+        <div class="message">
+            <h1>✅ Approved & Inscribed</h1>
+            <p>The testimony has been verified and inscribed into the ledger.</p>
+            <a href="/admin/{secret}/pending">← Back to Pending</a>
+        </div>
+    </body>
+    </html>
+    """)
+
+@app.post("/admin/{secret}/reject/{submission_id}")
+async def admin_reject(request: Request, secret: str, submission_id: str):
+    """Reject a submission"""
+    
+    # Security check
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    
+    ledger = get_ledger()
+    if not ledger:
+        return render("error.html", request, error="Ledger not ready")
+    
+    submission = await ledger.get_submission(submission_id)
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get('status') != 'PENDING_JURY':
+        raise HTTPException(status_code=400, detail="Submission is not pending")
+    
+    # Update status to REJECTED
+    import sqlite3
+    db_path = Path("./ledger/ledger.db")
+    
+    if not db_path.exists():
+        return render("error.html", request, error="Database not found")
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE submissions 
+        SET status = 'REJECTED'
+        WHERE submission_id = ?
+    """, (submission_id,))
+    
+    conn.commit()
+    conn.close()
+    
+    return HTMLResponse(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ background: #1a1410; color: #f4efe8; font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+            .message {{ text-align: center; }}
+            .message h1 {{ color: #c94b4b; font-size: 3rem; }}
+            .message p {{ color: #cbbfae; font-size: 1.2rem; }}
+            .message a {{ color: #cbbfae; text-decoration: none; border: 1px solid #cbbfae; padding: 0.8rem 2rem; border-radius: 8px; display: inline-block; margin-top: 1.5rem; }}
+            .message a:hover {{ background: #cbbfae; color: #1a1410; }}
+        </style>
+    </head>
+    <body>
+        <div class="message">
+            <h1>❌ Rejected</h1>
+            <p>The testimony has been rejected and will not be inscribed.</p>
+            <a href="/admin/{secret}/pending">← Back to Pending</a>
+        </div>
+    </body>
+    </html>
+    """)
+
+@app.get("/admin/{secret}/create-test")
+async def create_test_pending(request: Request, secret: str):
+    """Create a test pending submission for demo purposes"""
+    
+    # Security check
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    
+    ledger = get_ledger()
+    if not ledger:
+        return JSONResponse(status_code=503, content={"error": "Ledger not ready"})
+    
+    test_submission = {
+        "submission_id": f"test_{uuid.uuid4().hex[:8]}",
+        "submission_hash": hashlib.sha256(f"test{datetime.now()}".encode()).hexdigest(),
+        "entity_id": "test_entity",
+        "entity_name": "Test Entity",
+        "title": "Test Submission - Pending Review",
+        "description": "This is a test submission awaiting jury review. It demonstrates the admin review workflow.",
+        "incident_country": "Global",
+        "incident_year": 2024,
+        "life_loss": 0,
+        "financial_loss": 0,
+        "submitter_pubkey_hash": "test_user",
+        "status": "PENDING_JURY",
+        "created_at": datetime.now().isoformat()
+    }
+    
+    await ledger.submit_entry(test_submission)
+    
+    return HTMLResponse(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ background: #1a1410; color: #f4efe8; font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+            .message {{ text-align: center; }}
+            .message h1 {{ color: #e3b04b; font-size: 3rem; }}
+            .message p {{ color: #cbbfae; font-size: 1.2rem; }}
+            .message a {{ color: #e3b04b; text-decoration: none; border: 1px solid #e3b04b; padding: 0.8rem 2rem; border-radius: 8px; display: inline-block; margin-top: 1.5rem; }}
+            .message a:hover {{ background: #e3b04b; color: #1a1410; }}
+        </style>
+    </head>
+    <body>
+        <div class="message">
+            <h1>✅ Test Submission Created</h1>
+            <p>A test pending submission has been created for review.</p>
+            <a href="/admin/{secret}/pending">→ View Pending</a>
+        </div>
+    </body>
+    </html>
+    """)
