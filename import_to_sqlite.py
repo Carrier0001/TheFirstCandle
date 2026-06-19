@@ -123,4 +123,8 @@ def import_to_sqlite():
 if __name__ == "__main__":
     print("🔄 Importing JSON data into SQLite...")
     print("="*50)
+<<<<<<< HEAD
     import_to_sqlite()
+=======
+    import_to_sqlite()
+>>>>>>> ea1a7023d4be0cc3672d28345b42de31c73b0aa9
