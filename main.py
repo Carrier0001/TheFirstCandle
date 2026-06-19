@@ -2,11 +2,16 @@ import os
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from app.core.database import lifespan, get_ledger
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
 from datetime import datetime
+import json
+import hashlib
+import uuid
+import httpx
+from pathlib import Path
 
 os.makedirs("static", exist_ok=True)
 os.makedirs("templates", exist_ok=True)
@@ -54,6 +59,211 @@ app.include_router(aggregation.router)
 app.include_router(evidence.router)
 app.include_router(jury.router)
 app.include_router(admin.router)
+
+# ==================== IMPORT DATA FROM GITHUB ====================
+@app.get("/admin/import-data")
+async def import_data_from_github():
+    """Import all JSON data from GitHub into the ledger"""
+    try:
+        ledger = get_ledger()
+        
+        if not ledger:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "Ledger not ready"}
+            )
+        
+        # GitHub API to get all JSON files
+        api_url = "https://api.github.com/repos/Carrier0001/TheFirstCandle/contents/Data"
+        
+        async with httpx.AsyncClient() as client:
+            # Get list of files
+            response = await client.get(api_url, timeout=30.0)
+            
+            if response.status_code != 200:
+                return JSONResponse(
+                    status_code=response.status_code,
+                    content={"error": f"GitHub API error: {response.status_code}"}
+                )
+            
+            files_data = response.json()
+            json_files = [f["name"] for f in files_data if f["name"].endswith(".json")]
+            
+            if not json_files:
+                return JSONResponse(
+                    status_code=404,
+                    content={"error": "No JSON files found in Data folder"}
+                )
+            
+            imported = 0
+            skipped = 0
+            errors = 0
+            entities_imported = set()
+            
+            for filename in json_files:
+                try:
+                    raw_url = f"https://raw.githubusercontent.com/Carrier0001/TheFirstCandle/main/Data/{filename}"
+                    file_response = await client.get(raw_url, timeout=30.0)
+                    file_response.raise_for_status()
+                    
+                    data = file_response.json()
+                    
+                    if "entity_id" in data and "entries" in data:
+                        entity_id = data["entity_id"]
+                        entity_name = data.get("entity_name", entity_id.replace('_', ' ').title())
+                        entities_imported.add(entity_name)
+                        
+                        for entry in data["entries"]:
+                            # Skip entries with no harm/surplus
+                            if (entry.get("harm_ly", 0) == 0 and 
+                                entry.get("surplus_ly", 0) == 0 and 
+                                not entry.get("description")):
+                                skipped += 1
+                                continue
+                            
+                            submission = {
+                                "submission_id": entry.get("entry_id", str(uuid.uuid4())),
+                                "submission_hash": hashlib.sha256(
+                                    f"{entity_id}{entry.get('description', '')}{datetime.now()}".encode()
+                                ).hexdigest(),
+                                "entity_id": entity_id,
+                                "entity_name": entity_name,
+                                "title": f"{entity_name} - {entry.get('incident_type', 'Incident')}",
+                                "description": entry.get("description", ""),
+                                "incident_country": "Global",
+                                "incident_year": entry.get("year", 2025),
+                                "life_loss": abs(entry.get("harm_ly", 0)),
+                                "financial_loss": abs(entry.get("harm_ecy", 0)),
+                                "submitter_pubkey_hash": "web_import",
+                                "status": "APPROVED",
+                                "created_at": entry.get("date_logged", datetime.now().isoformat())
+                            }
+                            
+                            try:
+                                await ledger.submit_entry(submission)
+                                imported += 1
+                            except Exception as e:
+                                errors += 1
+                                
+                    else:
+                        errors += 1
+                        
+                except Exception as e:
+                    errors += 1
+            
+            # Get final count
+            all_submissions = await ledger.get_submissions()
+            
+            return JSONResponse(content={
+                "message": "Import completed successfully",
+                "imported": imported,
+                "skipped": skipped,
+                "errors": errors,
+                "files_processed": len(json_files),
+                "entities_imported": list(entities_imported),
+                "total_submissions": len(all_submissions)
+            })
+            
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+# ==================== IMPORT SINGLE FILE (GROK AI) ====================
+@app.get("/admin/import-grok")
+async def import_grok():
+    """Quick import just Grok AI data"""
+    try:
+        ledger = get_ledger()
+        
+        if not ledger:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "Ledger not ready"}
+            )
+        
+        url = "https://raw.githubusercontent.com/Carrier0001/TheFirstCandle/main/Data/grok_ai.json"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=30.0)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            imported = 0
+            if "entity_id" in data and "entries" in data:
+                entity_id = data["entity_id"]
+                entity_name = data["entity_name"]
+                
+                for entry in data["entries"]:
+                    if (entry.get("harm_ly", 0) == 0 and 
+                        entry.get("surplus_ly", 0) == 0 and 
+                        not entry.get("description")):
+                        continue
+                    
+                    submission = {
+                        "submission_id": entry.get("entry_id", str(uuid.uuid4())),
+                        "submission_hash": hashlib.sha256(
+                            f"{entity_id}{entry.get('description', '')}{datetime.now()}".encode()
+                        ).hexdigest(),
+                        "entity_id": entity_id,
+                        "entity_name": entity_name,
+                        "title": f"{entity_name} - {entry.get('incident_type', 'Incident')}",
+                        "description": entry.get("description", ""),
+                        "incident_country": "Global",
+                        "incident_year": entry.get("year", 2025),
+                        "life_loss": abs(entry.get("harm_ly", 0)),
+                        "financial_loss": abs(entry.get("harm_ecy", 0)),
+                        "submitter_pubkey_hash": "web_import",
+                        "status": "APPROVED",
+                        "created_at": entry.get("date_logged", datetime.now().isoformat())
+                    }
+                    await ledger.submit_entry(submission)
+                    imported += 1
+            
+            return JSONResponse(content={
+                "message": f"✅ Imported {imported} entries for {entity_name}",
+                "imported": imported,
+                "entity": entity_name
+            })
+            
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+# ==================== CHECK LEDGER STATUS ====================
+@app.get("/admin/status")
+async def ledger_status():
+    """Check ledger status and data count"""
+    try:
+        ledger = get_ledger()
+        
+        if not ledger:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "Ledger not ready"}
+            )
+        
+        submissions = await ledger.get_submissions()
+        entities = set()
+        for sub in submissions:
+            entities.add(sub.get('entity_id'))
+        
+        return JSONResponse(content={
+            "ledger_ready": True,
+            "total_submissions": len(submissions),
+            "unique_entities": len(entities),
+            "entities": list(entities)[:10]  # Show first 10
+        })
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
 
 # ==================== TEST ROUTE ====================
 @app.get("/test")
