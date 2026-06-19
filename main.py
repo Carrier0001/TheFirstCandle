@@ -60,6 +60,97 @@ app.include_router(evidence.router)
 app.include_router(jury.router)
 app.include_router(admin.router)
 
+# ==================== PREVIEW IMPORT (DRY RUN, NO WRITES) ====================
+@app.get("/admin/import-preview")
+async def import_preview():
+    """
+    Dry run: fetch everything from GitHub, diff it against what's already
+    in the DB, and report what WOULD happen. Does not write anything —
+    no file writes, no git commits, no SQLite inserts. Use this to sanity
+    check the pipeline before calling /admin/import-data for real.
+    """
+    try:
+        ledger = get_ledger()
+        if not ledger:
+            return JSONResponse(status_code=503, content={"error": "Ledger not ready"})
+
+        headers = {
+            "User-Agent": "VowLedger-App/1.0",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        api_url = "https://api.github.com/repos/Carrier0001/TheFirstCandle/contents/Data"
+
+        existing_ids = await ledger.get_existing_submission_ids()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(api_url, timeout=30.0, headers=headers)
+            if response.status_code != 200:
+                return JSONResponse(
+                    status_code=response.status_code,
+                    content={"error": f"GitHub API error: {response.status_code}"}
+                )
+
+            files_data = response.json()
+            json_files = [f["name"] for f in files_data if f["name"].endswith(".json")]
+
+            to_add = []
+            already_exists = []
+            skipped_empty = []
+            file_errors = []
+
+            for filename in json_files:
+                try:
+                    raw_url = f"https://raw.githubusercontent.com/Carrier0001/TheFirstCandle/main/Data/{filename}"
+                    file_response = await client.get(raw_url, timeout=30.0, headers=headers)
+                    if file_response.status_code != 200:
+                        file_errors.append({"file": filename, "reason": f"HTTP {file_response.status_code}"})
+                        continue
+
+                    data = file_response.json()
+                    if "entity_id" not in data or "entries" not in data:
+                        file_errors.append({"file": filename, "reason": "missing entity_id/entries"})
+                        continue
+
+                    entity_id = data["entity_id"]
+                    entity_name = data.get("entity_name", entity_id.replace('_', ' ').title())
+
+                    for entry in data["entries"]:
+                        entry_id = entry.get("entry_id")
+
+                        if (entry.get("harm_ly", 0) == 0 and
+                            entry.get("surplus_ly", 0) == 0 and
+                            not entry.get("description")):
+                            skipped_empty.append(entry_id)
+                            continue
+
+                        if entry_id and entry_id in existing_ids:
+                            already_exists.append(entry_id)
+                        else:
+                            to_add.append({
+                                "entry_id": entry_id,
+                                "entity_id": entity_id,
+                                "entity_name": entity_name,
+                                "year": entry.get("year"),
+                                "description_preview": (entry.get("description", "") or "")[:120]
+                            })
+
+                except Exception as e:
+                    file_errors.append({"file": filename, "reason": str(e)})
+
+        return JSONResponse(content={
+            "files_checked": len(json_files),
+            "would_add": len(to_add),
+            "already_in_db": len(already_exists),
+            "skipped_empty": len(skipped_empty),
+            "file_errors": len(file_errors),
+            "to_add": to_add,
+            "already_in_db_ids": already_exists,
+            "file_error_details": file_errors
+        })
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 # ==================== IMPORT DATA FROM GITHUB ====================
 @app.get("/admin/import-data")
 async def import_data_from_github():
