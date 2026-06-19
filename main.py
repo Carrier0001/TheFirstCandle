@@ -4,9 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from app.core.database import lifespan
+from app.core.database import lifespan, get_ledger
 from app.api import health, submissions, entities, aggregation, evidence, jury, admin
-from app.core import database
 from datetime import datetime
 
 os.makedirs("static", exist_ok=True)
@@ -43,8 +42,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def is_db_ready():
-    return database.db_pool is not None and hasattr(database.db_pool, 'acquire')
+# Helper to check if ledger is ready
+def is_ledger_ready():
+    ledger = get_ledger()
+    return ledger is not None
 
 app.include_router(health.router)
 app.include_router(submissions.router)
@@ -57,53 +58,69 @@ app.include_router(admin.router)
 # ==================== TEST ROUTE ====================
 @app.get("/test")
 async def test_page(request: Request):
-    if not is_db_ready():
-        return HTMLResponse("Database not ready", status_code=503)
-    async with database.db_pool.acquire() as conn:
-        count = await conn.fetchval("SELECT COUNT(*) FROM submissions")
-    return render("minimal.html", request, entity_count=count)
+    if not is_ledger_ready():
+        return HTMLResponse("Ledger not ready", status_code=503)
+    
+    ledger = get_ledger()
+    submissions_list = await ledger.get_submissions()
+    return render("minimal.html", request, entity_count=len(submissions_list))
 
 # ==================== PUBLIC LEDGER (HOME) ====================
 @app.get("/", include_in_schema=False)
 async def root(request: Request):
-    if not is_db_ready():
+    if not is_ledger_ready():
         return render("index.html", request, entities=[], current_date=datetime.now().strftime("%B %d, %Y"))
     
-    async with database.db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT 
-                entity_id,
-                entity_name,
-                COUNT(*) as total_entries,
-                SUM(life_loss_submitted) as total_harm_ly,
-                SUM(financial_loss_submitted) as total_harm_ecy,
-                MAX(received_at) as last_entry
-            FROM submissions 
-            WHERE status = 'APPROVED'
-            GROUP BY entity_id, entity_name
-            ORDER BY total_harm_ly ASC
-        """)
-        
-        entities = []
-        for row in rows:
-            entities.append({
-                "entity_id": row['entity_id'],
-                "entity_name": row['entity_name'],
-                "lifetime": {
-                    "outstanding_ly": abs(row['total_harm_ly'] or 0),
-                    "outstanding_ecy": abs(row['total_harm_ecy'] or 0)
-                },
-                "total_entries": row['total_entries'],
-                "measurement_date": row['last_entry'].strftime("%Y-%m-%d") if row['last_entry'] else datetime.now().strftime("%Y-%m-%d"),
-                "has_systemic": False
-            })
+    ledger = get_ledger()
+    submissions_list = await ledger.get_submissions()
     
-    return render("index.html", request, entities=entities, current_date=datetime.now().strftime("%B %d, %Y"))
+    # Aggregate submissions by entity
+    entity_aggregates = {}
+    for sub in submissions_list:
+        if sub.get('status') == 'APPROVED':
+            entity_id = sub.get('entity_id')
+            if not entity_id:
+                continue
+            if entity_id not in entity_aggregates:
+                entity_aggregates[entity_id] = {
+                    "entity_id": entity_id,
+                    "entity_name": sub.get('entity_name', 'Unknown'),
+                    "total_entries": 0,
+                    "total_harm_ly": 0,
+                    "total_harm_ecy": 0,
+                    "last_entry": None
+                }
+            
+            entity_aggregates[entity_id]["total_entries"] += 1
+            entity_aggregates[entity_id]["total_harm_ly"] += abs(sub.get('life_loss', 0))
+            entity_aggregates[entity_id]["total_harm_ecy"] += abs(sub.get('financial_loss', 0))
+            created_at = sub.get('created_at')
+            if created_at and (entity_aggregates[entity_id]["last_entry"] is None or created_at > entity_aggregates[entity_id]["last_entry"]):
+                entity_aggregates[entity_id]["last_entry"] = created_at
+    
+    entities_list = []
+    for entity_id, data in entity_aggregates.items():
+        entities_list.append({
+            "entity_id": data["entity_id"],
+            "entity_name": data["entity_name"],
+            "lifetime": {
+                "outstanding_ly": data["total_harm_ly"],
+                "outstanding_ecy": data["total_harm_ecy"]
+            },
+            "total_entries": data["total_entries"],
+            "measurement_date": data["last_entry"].strftime("%Y-%m-%d") if data["last_entry"] else datetime.now().strftime("%Y-%m-%d"),
+            "has_systemic": False
+        })
+    
+    # Sort by harm (most harmful first)
+    entities_list.sort(key=lambda x: x["lifetime"]["outstanding_ly"], reverse=True)
+    
+    return render("index.html", request, entities=entities_list, current_date=datetime.now().strftime("%B %d, %Y"))
 
 # ==================== ENTITY DETAIL PAGE ====================
 @app.get("/entity/{entity_id}", include_in_schema=False)
 async def entity_page(request: Request, entity_id: str):
-    if not is_db_ready():
+    if not is_ledger_ready():
         return render("entity.html", request, entity={
             "entity_id": entity_id,
             "entity_name": "Loading...",
@@ -113,98 +130,69 @@ async def entity_page(request: Request, entity_id: str):
             "aggregated_entries": []
         })
     
-    async with database.db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT 
-                submission_id,
-                entity_id,
-                entity_name,
-                title,
-                description,
-                incident_year as year,
-                life_loss_submitted as harm_ly,
-                financial_loss_submitted as harm_ecy,
-                status,
-                received_at,
-                evidence_links,
-                intent_type,
-                confidence
-            FROM submissions 
-            WHERE entity_id = $1 AND status = 'APPROVED'
-            ORDER BY incident_year DESC
-        """, entity_id)
-        
-        if not rows:
-            raise HTTPException(status_code=404, detail="Entity not found")
-        
-        entity_data = {
-            "entity_id": entity_id,
-            "entity_name": rows[0]['entity_name'],
-            "entity_state": "ACTIVE",
-            "measurement_date": datetime.now().strftime("%Y-%m-%d"),
-            "entries": [],
-            "aggregated_entries": []
-        }
-        
-        for row in rows:
-            entity_data["entries"].append({
-                "entry_id": row['submission_id'],
-                "year": row['year'],
-                "description": row['description'],
-                "harm_ly": row['harm_ly'] or 0,
-                "harm_ecy": row['harm_ecy'] or 0,
-                "intent_type": row['intent_type'] or "NEGLIGENCE",
-                "confidence": row['confidence'] or "MEDIUM",
-                "evidence_hashes": [row['evidence_links']] if row['evidence_links'] else []
-            })
+    ledger = get_ledger()
+    submissions_list = await ledger.get_submissions(entity_id)
+    
+    if not submissions_list:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    
+    # Filter only approved submissions
+    approved_submissions = [s for s in submissions_list if s.get('status') == 'APPROVED']
+    
+    if not approved_submissions:
+        raise HTTPException(status_code=404, detail="No approved submissions found for this entity")
+    
+    entity_data = {
+        "entity_id": entity_id,
+        "entity_name": approved_submissions[0].get('entity_name', 'Unknown'),
+        "entity_state": "ACTIVE",
+        "measurement_date": datetime.now().strftime("%Y-%m-%d"),
+        "entries": [],
+        "aggregated_entries": []
+    }
+    
+    for sub in approved_submissions:
+        entity_data["entries"].append({
+            "entry_id": sub.get('submission_id', ''),
+            "year": sub.get('incident_year', 0),
+            "description": sub.get('description', ''),
+            "harm_ly": sub.get('life_loss', 0),
+            "harm_ecy": sub.get('financial_loss', 0.0),
+            "intent_type": "NEGLIGENCE",
+            "confidence": "MEDIUM",
+            "evidence_hashes": []
+        })
     
     return render("entity.html", request, entity=entity_data)
 
 # ==================== INDIVIDUAL ENTRY PAGE ====================
 @app.get("/entity/{entity_id}/entry/{entry_id}", include_in_schema=False)
 async def entry_page(request: Request, entity_id: str, entry_id: str):
-    if not is_db_ready():
-        raise HTTPException(status_code=503, detail="Database initializing, please refresh")
+    if not is_ledger_ready():
+        raise HTTPException(status_code=503, detail="Ledger initializing, please refresh")
     
-    async with database.db_pool.acquire() as conn:
-        row = await conn.fetchrow("""
-            SELECT 
-                submission_id,
-                entity_id,
-                entity_name,
-                title,
-                description,
-                incident_year as year,
-                life_loss_submitted as harm_ly,
-                financial_loss_submitted as harm_ecy,
-                status,
-                received_at,
-                evidence_links,
-                intent_type,
-                confidence
-            FROM submissions 
-            WHERE entity_id = $1 AND submission_id = $2 AND status = 'APPROVED'
-        """, entity_id, entry_id)
-        
-        if not row:
-            raise HTTPException(status_code=404, detail="Entry not found")
-        
-        entry_data = {
-            "entry_id": row['submission_id'],
-            "year": row['year'],
-            "description": row['description'],
-            "harm_ly": row['harm_ly'] or 0,
-            "harm_ecy": row['harm_ecy'] or 0,
-            "intent_type": row['intent_type'] or "NEGLIGENCE",
-            "confidence": row['confidence'] or "MEDIUM",
-            "evidence_hashes": [],
-            "external_links": [row['evidence_links']] if row['evidence_links'] else []
-        }
-        
-        entity_data = {
-            "entity_id": row['entity_id'],
-            "entity_name": row['entity_name']
-        }
+    ledger = get_ledger()
+    submission = await ledger.get_submission(entry_id)
+    
+    if not submission or submission.get('entity_id') != entity_id or submission.get('status') != 'APPROVED':
+        raise HTTPException(status_code=404, detail="Entry not found")
+    
+    entry_data = {
+        "entry_id": submission.get('submission_id', ''),
+        "year": submission.get('incident_year', 0),
+        "description": submission.get('description', ''),
+        "harm_ly": submission.get('life_loss', 0),
+        "harm_ecy": submission.get('financial_loss', 0.0),
+        "intent_type": "NEGLIGENCE",
+        "confidence": "MEDIUM",
+        "evidence_hashes": [],
+        "external_links": []
+    }
+    
+    entity_data = {
+        "entity_id": submission.get('entity_id', ''),
+        "entity_name": submission.get('entity_name', 'Unknown')
+    }
     
     return render("entry.html", request, entry=entry_data, entity=entity_data)
 
@@ -219,7 +207,7 @@ async def methodology(request: Request):
 
 @app.get("/submit", include_in_schema=False)
 async def submit(request: Request):
-    return render("submit.html", request)  
+    return render("submit.html", request)
 
 @app.get("/success", include_in_schema=False)
 async def success(request: Request, submission_id: str = None, entity_name: str = None):
