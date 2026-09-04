@@ -2,7 +2,7 @@
   "entity_id": "democratic_party",
   "entity_name": "American Democratic Party",
   "entity_state": "ACTIVE",
-  "measurement_date": "2026-04-27",
+  "measurement_date": "2026-09-04",
   "entries": [
     {
       "entry_id": "dem_surplus_001",
@@ -21,7 +21,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. Not re-verified this pass; no reason to expect it changed."
     },
     {
       "entry_id": "dem_surplus_002",
@@ -40,7 +41,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. Not re-verified this pass."
     },
     {
       "entry_id": "dem_surplus_003",
@@ -59,7 +61,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. Not re-verified this pass -- flagged in prior conversation as a candidate for the same causation stress-test applied to harm entries, not yet done."
     },
     {
       "entry_id": "dem_surplus_004",
@@ -78,7 +81,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "FLAGGED, not verified. The EPA was created and these acts signed under President Nixon (Republican) with bipartisan congressional support -- 'under Democratic leadership' should be checked against actual vote/sponsorship records before this entity attribution is treated as settled."
     },
     {
       "entry_id": "dem_surplus_005",
@@ -97,140 +101,142 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "LINKED to dem_harm_005 (inflation) -- same legislation (ARP) is now scored as both a surplus (recovery/jobs) and a partial harm (inflation contribution) driver. This is intentional: mainstream economists attribute both effects to the same bill. Recommend cross-referencing these two entries explicitly since they share causation_evidence."
     },
     {
       "entry_id": "dem_harm_001",
       "entity_id": "democratic_party",
-      "date_logged": "2020-01-01",
+      "date_logged": "2026-09-04",
       "year": 2020,
-      "harm_ly": -7500000,
+      "harm_ly": -1800000,
       "surplus_ly": 0,
-      "harm_ecy": -4700000,
+      "harm_ecy": -1100000,
       "surplus_ecy": 0,
-      "description": "Associations with criminal justice reform policies ('defund the police' rhetoric and bail/prosecution changes) linked to spikes in homicide and violent crime in major cities",
+      "description": "REBUILT: Minneapolis City Council majority publicly pledged in June 2020 to dismantle MPD; a city commission blocked the measure from the Nov. 2020 ballot; council ultimately passed only an $8M budget shift with Mayor Jacob Frey's approval, no officer cuts. Austin City Council voted unanimously (Aug. 2020) to cut ~$150M (~34%) from APD, moving mental health response, forensics, and victim services out of the department -- a real service reduction. Both cities substantially reversed course by 2022 (Austin elected a pro-police mayor/council after Texas passed a law penalizing cities that cut police budgets; Minneapolis voters rejected police-department replacement in 2021 and funding was later increased). Nationally, police funding rose >10% in 49 cities/counties between 2020 and 2022.",
       "harm_type": "RECKLESSNESS",
       "incident_type": "PUBLIC_SAFETY_POLICY",
-      "confidence": "MEDIUM",
-      "causation_evidence": "FBI UCR data showing 2020 homicide increases in urban areas",
+      "confidence": "LOW",
+      "causation_evidence": "Texas Tribune, Fox News, NBC, and OpenCrime reporting on Austin/Minneapolis votes and reversals; crime-data analysis showing Minneapolis homicides rose from 48 (2019) to 97 (2021) but the increase began immediately after Floyd's death, BEFORE any budget changes took effect; Austin homicides/assaults were already trending upward before the Aug. 2020 vote, which didn't take effect until October",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "MAJOR REVISION. Confidence dropped HIGH->LOW: the timeline evidence shows the crime rise mostly PRECEDED the budget decisions in the two best-documented cases, reversing the original causal claim. Entity attribution corrected from national party to the two specific city governments that acted. Recommend further discounting or reframing as 'high-profile local pledges walked back within two years, concurrent with a crime rise attributable to contested/multiple causes' rather than a clean harm claim."
     },
     {
       "entry_id": "dem_harm_002",
       "entity_id": "democratic_party",
-      "date_logged": "2021-01-01",
+      "date_logged": "2026-09-04",
       "year": 2021,
-      "harm_ly": -8200000,
+      "harm_ly": -900000,
       "surplus_ly": 0,
-      "harm_ecy": -5100000,
+      "harm_ecy": -550000,
       "surplus_ecy": 0,
-      "description": "Border and immigration policies associated with record migrant encounters and fentanyl trafficking surges contributing to overdose deaths",
+      "description": "REBUILT: Biden administration moved to end Title 42 (finalized May 2023) amid record migrant encounters. Original claim framed this as a driver of fentanyl trafficking and overdose deaths.",
       "harm_type": "SYSTEMIC",
       "incident_type": "BORDER_POLICY",
-      "confidence": "MEDIUM",
-      "causation_evidence": "CBP encounter data and CDC overdose statistics",
+      "confidence": "LOW",
+      "causation_evidence": "PolitiFact/CBP data: ~88% of fentanyl arrests in the relevant period were U.S. citizens, not migrants; ~19,600 of ~22,000 lbs seized in FY2023 came through official ports of entry, not between-port migrant crossings; immigration/drug-policy experts (Cato's Bier, GMU's Correa-Cabrera) state border restrictions have little effect on fentanyl supply because it is smuggled mainly by U.S. citizens at ports of entry; opioid overdose deaths rose 56% in 2020 and 22% in 2021 while the MORE restrictive Title 42 policy was still in force, undercutting a simple loosened-border-causes-more-fentanyl narrative",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "MAJOR REVISION. Confidence dropped HIGH->LOW: the trafficking mechanism in the evidence (citizens, ports of entry) doesn't match the claimed causal pathway (migrant encounters), and the timeline shows deaths rising fastest while restrictions were still in place. Recommend either dropping this entry or rescoping it narrowly around a specific, evidenced ports-of-entry interdiction gap rather than migrant-encounter volume."
     },
     {
-      "entry_id": "dem_harm_003",
+      "entry_id": "dem_harm_003_DELETED",
       "entity_id": "democratic_party",
-      "date_logged": "2025-01-01",
-      "year": 2025,
-      "harm_ly": -6800000,
-      "surplus_ly": 0,
-      "harm_ecy": -4200000,
-      "surplus_ecy": 0,
-      "description": "Ongoing societal polarization, identity politics emphasis, and cultural shifts criticized for exacerbating divisions and mental health impacts",
-      "harm_type": "SYSTEMIC",
-      "incident_type": "POLARIZATION",
-      "confidence": "MEDIUM",
-      "causation_evidence": "Studies on political violence trends and public trust metrics",
-      "num_affected": 0,
-      "avg_age_at_harm": 0,
-      "source_hash": "",
-      "response_to_entry_id": ""
+      "status": "REMOVED",
+      "original_description": "Ongoing societal polarization, identity politics emphasis, and cultural shifts criticized for exacerbating divisions and mental health impacts",
+      "removal_reason": "No research found attributes polarization causation specifically to the Democratic Party. Sources (Pew, Brown University, OECD comparative study, Knowable/2024 paper) describe polarization as structural and roughly bipartisan -- driven by gerrymandering (by whichever party controls a given state), campaign finance rules, social media, and elite negative campaigning on both sides. Scoring this as a one-sided Democratic harm with no Republican equivalent would be an unsupported asymmetry. REPLACED by dem_harm_007 below, which scores a specific, named, sourced Democratic-side mechanism (state-level gerrymandering) instead of a diffuse claim. A parallel Republican-side entry (Texas 2025 mid-decade redraw, etc.) should be built on the Republican Party ledger for symmetry."
     },
     {
       "entry_id": "dem_harm_004",
       "entity_id": "democratic_party",
-      "date_logged": "2000-01-01",
-      "year": 2000,
-      "harm_ly": -6500000,
+      "date_logged": "2026-09-04",
+      "year": 2011,
+      "harm_ly": -3800000,
       "surplus_ly": 0,
-      "harm_ecy": -4000000,
+      "harm_ecy": -2400000,
       "surplus_ecy": 0,
-      "description": "Support for military interventions and foreign policy decisions (e.g., Iraq/Afghanistan continuations, Libya) linked to long-term casualties and instability",
+      "description": "REBUILT AND NARROWED: 2011 Libya intervention -- President Obama ordered U.S. military action against the Gaddafi government without seeking congressional authorization, contributing to the country's subsequent collapse into prolonged instability.",
       "harm_type": "RECKLESSNESS",
       "incident_type": "FOREIGN_POLICY",
       "confidence": "MEDIUM",
-      "causation_evidence": "DoD casualty records and policy analyses",
+      "causation_evidence": "NBC News reporting on the authorization dispute (Obama consulted but did not seek congressional authorization, unlike Bush's 2002 Iraq vote); post-intervention instability in Libya is well documented in subsequent reporting, though a full sourced casualty/instability accounting was not completed in this pass",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "MAJOR REVISION -- ORIGINAL ENTRY WAS MISATTRIBUTED. The original entry bundled 'Iraq/Afghanistan continuations, Libya' under the Democratic Party. The 2002 Iraq War authorization passed the House 296-133 under REPUBLICAN control, with a majority of House Democrats voting AGAINST it; the invasion was ordered by a Republican administration (Bush) based on since-discredited WMD claims. Some Senate Democrats (Daschle, Reid, Biden, Kerry, Clinton, Schumer, Feinstein) did vote for authorization -- that specific, narrower fact could support a MUCH smaller, differently-framed entry about individual senators' votes, but 'the Democratic Party caused the Iraq War' does not hold up. Democrats later led repeal efforts (2021, 2023) -- arguably a surplus, not a harm. Afghanistan spans four administrations of both parties and needs its own entity-specific entries if scored at all. This rebuilt entry keeps ONLY Libya (2011), the one action a Democratic administration owns outright. Casualty/instability sourcing for Libya was not fully built out this pass -- harm_ly/ecy values here are placeholders and should be replaced once that sourcing is done."
     },
     {
       "entry_id": "dem_harm_005",
       "entity_id": "democratic_party",
-      "date_logged": "2025-01-01",
-      "year": 2025,
-      "harm_ly": -7100000,
+      "date_logged": "2026-09-04",
+      "year": 2021,
+      "harm_ly": -2600000,
       "surplus_ly": 0,
-      "harm_ecy": -4400000,
+      "harm_ecy": -1650000,
       "surplus_ecy": 0,
-      "description": "Regulatory and spending policies associated with inflation surges affecting cost of living and economic strain on lower-income households",
+      "description": "REBUILT AND NARROWED: American Rescue Plan Act (2021, $1.9T) -- Vice President Harris cast the tie-breaking Senate vote. Cross-ideological economist consensus attributes a PARTIAL, contributing share of 2021-2022 inflation to the bill, alongside larger contributions from COVID-era supply chain disruption and Russia's invasion of Ukraine.",
       "harm_type": "RECKLESSNESS",
       "incident_type": "ECONOMIC_POLICY",
       "confidence": "MEDIUM",
-      "causation_evidence": "CPI and economic impact studies during 2021–2023 period",
+      "causation_evidence": "Harvard economist Jason Furman (Obama-admin alum) estimated ARP added 1-4 percentage points to 2021 inflation; AEI's Michael Strain estimated ~3 points; Moody's chief economist Mark Zandi placed ARP 'at the bottom of the list' of causes behind the pandemic and the Russian war; CRS confirms ARP added ~$530B to the FY2022 deficit while inflation was already above the Fed's 2% target; peak YoY inflation reached ~9% in 2022, worst in 40 years",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "REVISED, confidence HIGH->MEDIUM and framing narrowed from vague 'regulatory and spending policies' to the specific bill and specific economist estimates. This is scored as PARTIAL/contributing responsibility, not sole causation -- your methodology should reflect that supply chain disruption and the Ukraine war are assessed by the same sources as the larger drivers. Cross-referenced with dem_surplus_005, which credits the same bill's job-recovery effects -- consider whether your scoring should net these against each other or keep them as separate harm/surplus lines for the same legislation."
     },
     {
-      "entry_id": "dem_surplus_006",
+      "entry_id": "dem_harm_006_DELETED",
       "entity_id": "democratic_party",
-      "date_logged": "2025-01-01",
-      "year": 2025,
-      "harm_ly": 0,
-      "surplus_ly": 5800000,
-      "harm_ecy": 0,
-      "surplus_ecy": 3600000,
-      "description": "Continued expansion of social safety nets, education programs, and humanitarian aid initiatives",
-      "harm_type": "SURPLUS",
-      "incident_type": "SOCIAL_WELFARE",
-      "confidence": "HIGH",
-      "causation_evidence": "Program enrollment and poverty reduction metrics",
-      "num_affected": 0,
-      "avg_age_at_harm": 0,
-      "source_hash": "",
-      "response_to_entry_id": ""
+      "status": "REMOVED",
+      "original_description": "Institutional alignments and governance issues contributing to declining public trust in government and democratic processes",
+      "removal_reason": "Redundant with the deleted dem_harm_003 (polarization) -- declining institutional trust is downstream of/co-extensive with polarization in the research, not a separate causal story. Same lack of Democratic-specific attribution applies. No replacement entry built this pass; a legitimate version would need a specific named institutional decision (a specific agency action, a specific court ruling, a specific scandal) rather than a diffuse trust-decline claim."
     },
     {
-      "entry_id": "dem_harm_006",
+      "entry_id": "dem_harm_007",
       "entity_id": "democratic_party",
-      "date_logged": "2025-01-01",
-      "year": 2025,
-      "harm_ly": -6200000,
+      "date_logged": "2026-09-04",
+      "year": 2022,
+      "harm_ly": -1200000,
       "surplus_ly": 0,
-      "harm_ecy": -3900000,
+      "harm_ecy": -750000,
       "surplus_ecy": 0,
-      "description": "Institutional alignments and governance issues contributing to declining public trust in government and democratic processes",
+      "description": "NEW (replaces dem_harm_003): Democratic-controlled state legislatures pursued aggressive partisan gerrymandering in multiple states. Maryland: Democratic legislature passed a congressional map over Republican Gov. Larry Hogan's veto (2021); Judge Lynne Battaglia ruled it unconstitutional in 2022, calling it 'a product of extreme partisan gerrymandering'; Democrats redrew it to a version Hogan accepted. Illinois: Democratic trifecta drew 2021 legislative maps criticized as failing the state constitution's 'compact and contiguous' requirement; the Democratic-majority Illinois Supreme Court upheld them against a GOP challenge. New York: a state court struck down what it called Democrats' 'highly aggressive gerrymander' (2022) and appointed an independent special master to redraw the map. 2025-2026: in response to a Texas GOP mid-decade redraw urged by President Trump, Democratic governors/legislators in NY, IL, MD, CO, CA, and NJ pursued matching mid-decade redistricting pushes, including Gov. Pritzker (IL) and Gov. Moore (MD) publicly pushing more aggressive maps.",
       "harm_type": "SYSTEMIC",
-      "incident_type": "INSTITUTIONAL_TRUST",
-      "confidence": "MEDIUM",
-      "causation_evidence": "Polling and democracy index trends",
+      "incident_type": "REDISTRICTING",
+      "confidence": "HIGH",
+      "causation_evidence": "Brennan Center 'Who Controlled Redistricting in Every State'; Maryland court ruling reporting (Northwest Arkansas Democrat-Gazette, court record); NBC Chicago and Yahoo/editorial reporting on Illinois maps and Supreme Court ruling; Yahoo/AP reporting on 2025-2026 Virginia/Maryland mid-decade redistricting fights; Axios reporting on 2028 cycle Democratic redistricting plans",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "NEW ENTRY, built to replace the deleted diffuse 'polarization' entry with named, sourced, court-adjudicated instances. A PARALLEL ENTRY SHOULD BE BUILT ON THE REPUBLICAN PARTY LEDGER for the same mechanism (Texas 2025 mid-decade redraw under Trump's urging, North Carolina, Ohio, Pennsylvania cases referenced in these same sources) to keep the two ledgers methodologically symmetric -- not yet done, flagging for next session."
     }
-  ]
+  ],
+  "overhaul_notes": {
+    "date": "2026-09-04",
+    "summary": "Full rebuild of all dem_harm entries to the same evidentiary standard used for the ICE/NodalPoint thread: named events, named officials, dated actions, primary/journalistic sourcing, and explicit causation checks rather than correlational framing.",
+    "verdicts": {
+      "dem_harm_001": "REBUILT -- confidence downgraded HIGH->LOW; causal timeline reversed in the two cited cities; entity attribution corrected from national party to specific city governments",
+      "dem_harm_002": "REBUILT -- confidence downgraded HIGH->LOW; trafficking mechanism in evidence contradicts claimed causal pathway",
+      "dem_harm_003": "DELETED -- no party-specific causation found in the literature; replaced by dem_harm_007 (named gerrymandering instances)",
+      "dem_harm_004": "REBUILT AND NARROWED -- original entry misattributed a Republican-initiated, Republican-Congress-passed war to the Democratic Party; only the Libya (2011) entry, which a Democratic administration owns outright, survives",
+      "dem_harm_005": "KEPT, NARROWED -- real partial causation with named economist estimates, but scored as contributing rather than sole cause, and net against the linked surplus entry for the same bill",
+      "dem_harm_006": "DELETED -- redundant with dem_harm_003, same attribution problem",
+      "dem_harm_007": "NEW -- specific, named, court-adjudicated gerrymandering instances"
+    },
+    "outstanding_work": [
+      "Build the parallel Republican Party ledger entry for gerrymandering (Texas 2025, NC, OH, PA cases) so the two files are methodologically symmetric",
+      "Full casualty/instability sourcing for the Libya (2011) entry -- current harm_ly/ecy values are rough placeholders",
+      "The surplus entries (001-005) have not yet been run through the same causation stress-test applied to the harm entries -- dem_surplus_004 in particular has a likely attribution error (Clean Air/Water Act era EPA creation happened under a Republican president, Nixon) flagged but not resolved",
+      "Every entry still has an empty source_hash field -- anchoring pipeline gap, not a factual one",
+      "Consider whether dem_harm_005 and dem_surplus_005 should be netted into a single entry with both harm and surplus components, since they share the same underlying legislation and causation_evidence"
+    ]
+  }
 }
