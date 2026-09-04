@@ -2,7 +2,7 @@
   "entity_id": "us_judicial_branch",
   "entity_name": "United States Judicial Branch",
   "entity_state": "ACTIVE",
-  "measurement_date": "2026-03-16",
+  "measurement_date": "2026-09-04",
   "entries": [
     {
       "entry_id": "jud_harm_001",
@@ -21,7 +21,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. No status change found."
     },
     {
       "entry_id": "jud_harm_002",
@@ -40,7 +41,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. No status change found."
     },
     {
       "entry_id": "jud_harm_003",
@@ -59,7 +61,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. No status change found."
     },
     {
       "entry_id": "jud_harm_004",
@@ -78,7 +81,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED, but see jud_harm_013 and jud_harm_014 for continued non-enforcement through 2026."
     },
     {
       "entry_id": "jud_harm_005",
@@ -93,11 +97,12 @@
       "harm_type": "COVER_UP",
       "incident_type": "LEGAL_SUPPRESSION",
       "confidence": "HIGH",
-      "causation_evidence": "SCOTUSblog reporting and Judicial Conference letters",
+      "causation_evidence": "SCOTUSblog reporting and Judicial Conference letters; Campaign Legal Center repeated public requests for status updates in 2024 went unanswered for months",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "REINFORCED. No DOJ referral has surfaced publicly as of Sept 2026; the Judicial Conference has not issued a public update on the Thomas EIGA review despite repeated outside requests. Confidence remains HIGH but this is an ongoing absence of action rather than a single dated event -- consider this a standing/systemic condition, not a closed incident."
     },
     {
       "entry_id": "jud_harm_006",
@@ -116,7 +121,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED as a historical entry. See jud_surplus_001 (the request itself) and new entry jud_harm_014 (Congress's failure to act on it)."
     },
     {
       "entry_id": "jud_harm_007",
@@ -130,12 +136,13 @@
       "description": "Immigration court backlog reaches record 1.7+ million cases with average wait times of nearly 900 days (almost 2.5 years)",
       "harm_type": "SYSTEMIC",
       "incident_type": "CASE_BACKLOG",
-      "confidence": "HIGH",
+      "confidence": "MEDIUM",
       "causation_evidence": "EOIR January 2026 report and TRAC Immigration Court Backlog data",
       "num_affected": 1700000,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "SUPERSEDED IN SCALE, DISPUTED IN TREND -- see jud_harm_015. Sources disagree sharply on the current backlog figure (TRAC: ~3.2M as of June 2026; CIS.org: 'below 3.5M' as of Q2 FY26, down from 3.57M; other outlets cite 1.7-2M using different scope/definitions). Recommend lowering confidence on the original 1.7M figure to MEDIUM and treating it as a point-in-time snapshot rather than the current state."
     },
     {
       "entry_id": "jud_harm_008",
@@ -150,11 +157,12 @@
       "harm_type": "RECKLESSNESS",
       "incident_type": "CYBERSECURITY_FAILURE",
       "confidence": "HIGH",
-      "causation_evidence": "Reuters reporting and Senate cybersecurity concerns",
+      "causation_evidence": "Reuters/Politico reporting, Senate cybersecurity concerns, Administrative Office of the U.S. Courts public statement (Aug 7, 2025)",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "DATE CORRECTION + REINFORCED. Judiciary became internally aware of the full severity around July 4, 2025, but the breach was not publicly confirmed until Aug 7-8, 2025. Judge Michael Scudder (Judicial Conference IT Committee chair) testified CM/ECF and PACER are outdated and unsustainable due to cyber risk and require full replacement, with only incremental rollout planned. As of the most recent reporting found, CM/ECF remains active and some districts have shifted to hand-filing sealed documents rather than replacing the system outright -- see new entry jud_harm_016."
     },
     {
       "entry_id": "jud_harm_009",
@@ -173,7 +181,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. Could not independently verify a 2026 update to this figure in this pass; flagging for a dedicated follow-up search rather than guessing."
     },
     {
       "entry_id": "jud_harm_010",
@@ -192,7 +201,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "UNCHANGED. This is a historical-window study (2010-2020); not re-verified this pass, no reason to expect it changed."
     },
     {
       "entry_id": "jud_harm_011",
@@ -206,12 +216,13 @@
       "description": "Chronic federal court backlogs: strategic scheduling changes could reduce delays by 65%, but systemic understaffing persists nationwide",
       "harm_type": "SYSTEMIC",
       "incident_type": "CASE_BACKLOG",
-      "confidence": "HIGH",
+      "confidence": "MEDIUM",
       "causation_evidence": "Phys.org / international court efficiency research applicable to U.S. appeals",
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "FLAGGED, not changed. The underlying source is described as international court-efficiency research 'applicable to' U.S. appeals -- i.e. not a direct U.S.-specific finding. Recommend confirming whether a U.S.-specific study exists before treating the 65% figure as evidence about the U.S. judiciary specifically; lowered confidence to MEDIUM to reflect that gap."
     },
     {
       "entry_id": "jud_harm_012",
@@ -230,7 +241,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "OVERLAPS jud_harm_008 and new jud_harm_016. Consider merging these three into a single 'systemic CM/ECF failure' entry with dated sub-events, since they currently score the same underlying pattern three times, which may double-count harm in aggregate scoring."
     },
     {
       "entry_id": "jud_surplus_001",
@@ -249,7 +261,8 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "jud_harm_006",
+      "update_note": "LINKED to jud_harm_006 as the entity's response to that harm. See new jud_harm_014: this request has stalled in Congress since being reintroduced in Feb 2025 (H.R.1702 / H.R.1929), undercutting the surplus credit -- a request that never becomes law arguably shouldn't carry the same surplus weight as an enacted reform. Recommend you decide whether to discount this surplus value given the lack of follow-through."
     },
     {
       "entry_id": "jud_surplus_002",
@@ -263,12 +276,14 @@
       "description": "Ongoing federal judiciary efforts to fast-track secure case management system upgrades after 2025 hack disclosure",
       "harm_type": "NEGLIGENCE",
       "incident_type": "REFORM_EFFORT",
-      "confidence": "HIGH",
+      "confidence": "MEDIUM",
       "causation_evidence": "Reuters reporting on Judicial Conference IT Committee plans",
       "num_affected": 0,
+      "surplus_ecy_note": "",
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "jud_harm_008",
+      "update_note": "LINKED to jud_harm_008. Confidence lowered to MEDIUM: the most recent reporting found describes only an incremental, multi-year rollout plan with no completed replacement, and some courts have reverted to manual/paper filing for sensitive documents as a stopgap rather than a fixed system. This surplus entry may be crediting an intention more than a completed mitigation -- worth revisiting language to reflect 'in progress' rather than implying resolution."
     },
     {
       "entry_id": "jud_harm_013",
@@ -287,7 +302,87 @@
       "num_affected": 0,
       "avg_age_at_harm": 0,
       "source_hash": "",
-      "response_to_entry_id": ""
+      "response_to_entry_id": "",
+      "update_note": "REINFORCED. No enforcement mechanism has been added to the 2023 Code of Conduct as of Sept 2026 in anything found this pass."
+    },
+    {
+      "entry_id": "jud_harm_014",
+      "entity_id": "us_judicial_branch",
+      "date_logged": "2026-09-04",
+      "year": 2025,
+      "harm_ly": -1800000,
+      "surplus_ly": 0,
+      "harm_ecy": -1100000,
+      "surplus_ecy": 0,
+      "description": "NEW ENTRY: Congress fails to act on judgeship expansion for a second consecutive Congress. The JUDGES Act, reflecting the Judicial Conference's 71-judgeship recommendation, was vetoed in its 2024 form by President Biden, then reintroduced twice in 2025 (H.R.1702 and H.R.1929) and has not passed as of Sept 2026, leaving district courts without new judgeships since 2003",
+      "harm_type": "NEGLIGENCE",
+      "incident_type": "LEGISLATIVE_INACTION",
+      "confidence": "MEDIUM",
+      "causation_evidence": "Congress.gov bill text for H.R.1702 and H.R.1929 (119th Congress); Democracy Docket reporting on the 2024 veto; no record found of floor passage as of this search",
+      "num_affected": 0,
+      "avg_age_at_harm": 0,
+      "source_hash": "",
+      "response_to_entry_id": "jud_harm_006",
+      "update_note": "NEW. Confidence set to MEDIUM because I could not confirm a definitive current status (e.g. still in committee vs. quietly dead) -- recommend a direct search of Congress.gov bill status before anchoring this entry. Harm/ECY values are placeholders scaled roughly against jud_harm_006 -- you should replace with your own methodology's output, not treat these as final."
+    },
+    {
+      "entry_id": "jud_harm_015",
+      "entity_id": "us_judicial_branch",
+      "date_logged": "2026-09-04",
+      "year": 2026,
+      "harm_ly": -2600000,
+      "surplus_ly": 0,
+      "harm_ecy": -1650000,
+      "surplus_ecy": 0,
+      "description": "NEW ENTRY: Immigration court backlog remains at record scale (TRAC: ~3.2M pending as of June 2026) even as case closures hit an all-time monthly high in June 2026 (100,773), driven overwhelmingly by removal orders (78% of closures) rather than case resolution capacity; only 1.9% of closed cases in June 2026 were granted relief, and 68% of removal orders were issued in absentia",
+      "harm_type": "SYSTEMIC",
+      "incident_type": "CASE_BACKLOG",
+      "confidence": "HIGH",
+      "causation_evidence": "TRAC Immigration (Syracuse University) June 2026 Quick Facts and case-closure reporting",
+      "num_affected": 3195137,
+      "avg_age_at_harm": 0,
+      "source_hash": "",
+      "response_to_entry_id": "",
+      "update_note": "NEW. This entry deliberately treats 'backlog reduction via removal orders with near-zero relief grants and majority in-absentia rulings' as its own harm distinct from raw backlog size -- your original framing (jud_harm_007) scored backlog size alone. You may want to decide whether this is a harm, a mixed harm/surplus, or a due-process-specific entry given the 68% in-absentia rate. Flagging the judgment call rather than making it for you."
+    },
+    {
+      "entry_id": "jud_harm_016",
+      "entity_id": "us_judicial_branch",
+      "date_logged": "2026-09-04",
+      "year": 2025,
+      "harm_ly": -1400000,
+      "surplus_ly": 0,
+      "harm_ecy": -900000,
+      "surplus_ecy": 0,
+      "description": "NEW ENTRY: CM/ECF system remains in active use post-breach with no full replacement; Judicial Conference IT Committee chair Judge Michael Scudder testified the system is outdated, unsustainable due to cyber risk, and requires replacement, but modernization is proceeding only incrementally; some districts have reverted to hand-filing sealed/highly sensitive documents as a stopgap",
+      "harm_type": "RECKLESSNESS",
+      "incident_type": "CYBERSECURITY_FAILURE",
+      "confidence": "HIGH",
+      "causation_evidence": "Institute for Security and Technology analysis; Judge Scudder's House Judiciary Committee testimony; The Hill reporting",
+      "num_affected": 0,
+      "avg_age_at_harm": 0,
+      "source_hash": "",
+      "response_to_entry_id": "jud_harm_008",
+      "update_note": "NEW. Overlaps significantly with jud_harm_008 and jud_harm_012 -- see merge recommendation on jud_harm_012. Recommend consolidating the three CM/ECF entries into one multi-dated entry before finalizing, to avoid triple-counting the same underlying systemic failure in your aggregate harm score."
     }
-  ]
+  ],
+  "overhaul_notes": {
+    "date": "2026-09-04",
+    "structural_issues_found": [
+      "Every entry has an empty source_hash field. If your anchoring pipeline requires this for cryptographic commitment, none of these 15 original entries currently have one -- this predates today's research and is a pipeline/process gap, not a factual one.",
+      "response_to_entry_id was empty on every entry in the original file. This pass linked jud_surplus_001 -> jud_harm_006 and jud_surplus_002 -> jud_harm_008, and jud_harm_016 -> jud_harm_008, based on clear topical connection, but you should confirm these are the links you intend.",
+      "Three separate entries (jud_harm_008, jud_harm_012, jud_harm_016) now cover the same CM/ECF failure at different points in time. Recommend deciding whether your methodology wants recurring failures scored as one evolving entry or multiple discrete entries -- right now it's inconsistent across the file."
+    ],
+    "confidence_downgrades": [
+      "jud_harm_007: HIGH -> MEDIUM (backlog figure is contested/stale)",
+      "jud_harm_011: HIGH -> MEDIUM (source is international research 'applicable to' the US, not US-specific)",
+      "jud_surplus_002: HIGH -> MEDIUM (credits an in-progress intention, not a completed fix)"
+    ],
+    "items_not_independently_reverified_this_pass": [
+      "jud_harm_009 (2025 misconduct complaint count) -- no 2026 update found, not confirmed still accurate",
+      "jud_harm_010 (qualified immunity study) -- historical window study, not re-checked",
+      "jud_harm_003, jud_harm_004, jud_harm_013 (SCOTUS ethics enforcement status) -- no material change found, but this was not an exhaustive search"
+    ],
+    "caveat": "This pass covered the threads flagged in conversation (Thomas/Alito ethics, immigration backlog, CM/ECF breach, judgeships). It did not re-verify every original entry from scratch. Numeric harm_ly/harm_ecy values on the three new entries are rough placeholders scaled against comparable existing entries -- run them through your actual harm-scoring methodology before anchoring."
+  }
 }
